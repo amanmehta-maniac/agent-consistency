@@ -125,6 +125,58 @@ def action_sequence(run: Dict) -> List[str]:
     return [step.get("action", "") for step in run.get("steps", [])]
 
 
+def extract_action_sequence(run: Dict) -> tuple:
+    """Extract action sequence as a tuple from a run."""
+    steps = run.get("steps", [])
+    actions = [step.get("action", "") for step in steps]
+    return tuple(actions)
+
+
+def count_unique_sequences(task_data: Dict) -> int:
+    """Count unique action sequences across all runs for a task."""
+    runs = task_data.get("runs", [])
+    sequences = [extract_action_sequence(run) for run in runs]
+    return len(set(sequences))
+
+
+def is_correct(run: Dict, ground_truth: str) -> bool:
+    """Check if a run's answer matches ground truth (normalized)."""
+    answer = run.get("final_answer", "")
+    if not answer:
+        return False
+    
+    # Normalize for comparison
+    answer_norm = str(answer).lower().strip().rstrip(".,!?")
+    gt_norm = str(ground_truth).lower().strip().rstrip(".,!?")
+    
+    # Check if ground truth appears in answer or vice versa
+    return gt_norm in answer_norm or answer_norm in gt_norm
+
+
+def analyze_task_for_figures(task_data: Dict) -> Dict[str, Any]:
+    """Analyze a single task and return metrics for figure generation."""
+    ground_truth = task_data.get("answer", "")
+    runs = task_data.get("runs", [])
+    
+    unique_seqs = count_unique_sequences(task_data)
+    correct_count = sum(1 for run in runs if is_correct(run, ground_truth))
+    correctness = correct_count / len(runs) if runs else 0.0
+    
+    return {
+        "task_id": task_data.get("task_id", ""),
+        "unique_sequences": unique_seqs,
+        "correctness": correctness,
+        "n_runs": len(runs),
+    }
+
+
+def categorize_tasks_for_figures(analyses: List[Dict]) -> tuple:
+    """Categorize tasks into consistent (≤2 unique seqs) and inconsistent (≥8 unique seqs)."""
+    consistent = [a for a in analyses if a["unique_sequences"] <= 2]
+    inconsistent = [a for a in analyses if a["unique_sequences"] >= 8]
+    return consistent, inconsistent
+
+
 def action_sequence_similarity(runs: List[Dict]) -> Dict[str, Any]:
     """
     Compute action sequence similarity metrics.

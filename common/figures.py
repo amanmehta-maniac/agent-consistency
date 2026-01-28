@@ -5,11 +5,19 @@ Creates bar charts and histograms comparing Llama, GPT-4o, and Claude results.
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Any
 from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from common.analysis import (
+    analyze_task_for_figures as analyze_task,
+    categorize_tasks_for_figures as categorize_tasks,
+)
 
 
 def load_results(results_dir: str) -> List[Dict[str, Any]]:
@@ -30,56 +38,7 @@ def load_results(results_dir: str) -> List[Dict[str, Any]]:
     return results
 
 
-def extract_action_sequence(run: Dict) -> Tuple[str, ...]:
-    """Extract action sequence as a tuple from a run."""
-    steps = run.get("steps", [])
-    actions = [step.get("action", "") for step in steps]
-    return tuple(actions)
-
-
-def count_unique_sequences(task_data: Dict) -> int:
-    """Count unique action sequences across all runs for a task."""
-    runs = task_data.get("runs", [])
-    sequences = [extract_action_sequence(run) for run in runs]
-    return len(set(sequences))
-
-
-def is_correct(run: Dict, ground_truth: str) -> bool:
-    """Check if a run's answer matches ground truth (normalized)."""
-    answer = run.get("final_answer", "")
-    if not answer:
-        return False
-    
-    # Normalize for comparison
-    answer_norm = str(answer).lower().strip().rstrip(".,!?")
-    gt_norm = str(ground_truth).lower().strip().rstrip(".,!?")
-    
-    # Check if ground truth appears in answer or vice versa
-    return gt_norm in answer_norm or answer_norm in gt_norm
-
-
-def analyze_task(task_data: Dict) -> Dict[str, Any]:
-    """Analyze a single task and return metrics."""
-    ground_truth = task_data.get("answer", "")
-    runs = task_data.get("runs", [])
-    
-    unique_seqs = count_unique_sequences(task_data)
-    correct_count = sum(1 for run in runs if is_correct(run, ground_truth))
-    correctness = correct_count / len(runs) if runs else 0.0
-    
-    return {
-        "task_id": task_data.get("task_id", ""),
-        "unique_sequences": unique_seqs,
-        "correctness": correctness,
-        "n_runs": len(runs),
-    }
-
-
-def categorize_tasks(analyses: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
-    """Categorize tasks into consistent (≤2 unique seqs) and inconsistent (≥8 unique seqs)."""
-    consistent = [a for a in analyses if a["unique_sequences"] <= 2]
-    inconsistent = [a for a in analyses if a["unique_sequences"] >= 8]
-    return consistent, inconsistent
+# analyze_task and categorize_tasks are imported from common.analysis
 
 
 def create_bar_chart(
@@ -89,11 +48,14 @@ def create_bar_chart(
     gpt4o_inconsistent: List[Dict],
     claude_consistent: List[Dict],
     claude_inconsistent: List[Dict],
-    output_dir: str = "figures",
+    output_dir: str = None,
 ):
     """Create bar chart comparing correctness for consistent vs inconsistent tasks."""
-    output_dir = Path(output_dir)
-    output_dir.mkdir(exist_ok=True)
+    if output_dir is None:
+        output_dir = Path(__file__).parent.parent / "hotpotqa" / "figures"
+    else:
+        output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Calculate average correctness for each category
     llama_cons_correct = np.mean([a["correctness"] for a in llama_consistent]) if llama_consistent else 0.0
@@ -164,11 +126,14 @@ def create_histogram(
     llama_analyses: List[Dict],
     gpt4o_analyses: List[Dict],
     claude_analyses: List[Dict],
-    output_dir: str = "figures",
+    output_dir: str = None,
 ):
     """Create histogram of unique action sequences distribution."""
-    output_dir = Path(output_dir)
-    output_dir.mkdir(exist_ok=True)
+    if output_dir is None:
+        output_dir = Path(__file__).parent.parent / "hotpotqa" / "figures"
+    else:
+        output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     llama_unique_seqs = [a["unique_sequences"] for a in llama_analyses]
     gpt4o_unique_seqs = [a["unique_sequences"] for a in gpt4o_analyses]
@@ -233,10 +198,11 @@ def main():
     """Main function to generate all figures."""
     print("Loading results...")
     
-    # Load results from all three directories
-    llama_results = load_results("results_llama")
-    gpt4o_results = load_results("results_gpt4o")
-    claude_results = load_results("results_claude")
+    # Load results from all three directories (assuming running from hotpotqa/)
+    base_dir = Path(__file__).parent.parent / "hotpotqa"
+    llama_results = load_results(str(base_dir / "results_llama"))
+    gpt4o_results = load_results(str(base_dir / "results_gpt4o"))
+    claude_results = load_results(str(base_dir / "results_claude"))
     
     print(f"Loaded {len(llama_results)} Llama tasks")
     print(f"Loaded {len(gpt4o_results)} GPT-4o tasks")
