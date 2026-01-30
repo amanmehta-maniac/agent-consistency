@@ -1,0 +1,680 @@
+{
+  "task_id": "5a7625e8554299109176e66a",
+  "question": "In which year was the King who made the 1925 Birthday Honours born?",
+  "answer": "1865",
+  "type": "bridge",
+  "level": "hard",
+  "supporting_facts": {
+    "title": [
+      "1925 Birthday Honours",
+      "George V"
+    ],
+    "sent_id": [
+      0,
+      0
+    ]
+  },
+  "context_titles": [
+    "2017 Birthday Honours",
+    "2014 Birthday Honours",
+    "2015 Birthday Honours",
+    "2016 Birthday Honours",
+    "Birthday Honours",
+    "1965 Birthday Honours",
+    "George V",
+    "1951 Birthday Honours",
+    "2013 Birthday Honours",
+    "1925 Birthday Honours"
+  ],
+  "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+  "provider": "together",
+  "n_runs": 10,
+  "runs": [
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0001",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.410047",
+          "thought": "To answer this question, I need to know which King made the 1925 Birthday Honours. Once I have the King's name, I can find his birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to know which King made the 1925 Birthday Honours. Once I have the King's name, I can find his birth year.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.137074",
+          "thought": "I found the document \"1925 Birthday Honours\". Now I need to retrieve its content to find the King's name.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: I found the document \"1925 Birthday Honours\". Now I need to retrieve its content to find the King's name.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.940065",
+          "thought": "I found that the King who made the 1925 Birthday Honours was King George V. Now I need to find his birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: I found that the King who made the 1925 Birthday Honours was King George V. Now I need to find his birth year.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.684760",
+          "thought": "I found a document titled \"George V\", which is likely to contain information about King George V, including his birth year. Now I need to retrieve its content.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: I found a document titled \"George V\", which is likely to contain information about King George V, including his birth year. Now I need to retrieve its content.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:54.331777",
+          "thought": "I found that King George V was born on 3 June 1865. Now I can answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: I found that King George V was born on 3 June 1865. Now I can answer the question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.264480",
+      "end_time": "2026-01-26T21:34:54.331816"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0002",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:50.941136",
+          "thought": "To answer this question, I need to find information about the King who made the 1925 Birthday Honours and his birth year. I'll start by searching for documents related to the 1925 Birthday Honours.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to find information about the King who made the 1925 Birthday Honours and his birth year. I'll start by searching for documents related to the 1925 Birthday Honours.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:51.654395",
+          "thought": "The search results include the document \"1925 Birthday Honours\", which is likely to contain information about the King who made the honours. I'll retrieve the full content of this document to find more information.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: The search results include the document \"1925 Birthday Honours\", which is likely to contain information about the King who made the honours. I'll retrieve the full content of this document to find more information.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.462326",
+          "thought": "Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find his birth year to answer the question. I'll search for documents related to King George V.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V"
+          },
+          "observation": "Found 4 relevant document(s): Birthday Honours, George V, 1951 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find his birth year to answer the question. I'll search for documents related to King George V.\n\nAction: Search\nAction Input: {\"query\": \"King George V\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.063760",
+          "thought": "The search results include the document \"George V\", which is likely to contain biographical information about the King, including his birth year. I'll retrieve the full content of this document to find the answer.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The search results include the document \"George V\", which is likely to contain biographical information about the King, including his birth year. I'll retrieve the full content of this document to find the answer.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:53.480489",
+          "thought": "Now that I have found the birth year of King George V, I can answer the question. The King who made the 1925 Birthday Honours was born in 1865.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now that I have found the birth year of King George V, I can answer the question. The King who made the 1925 Birthday Honours was born in 1865.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.265462",
+      "end_time": "2026-01-26T21:34:53.480518"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0003",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.093337",
+          "thought": "I need to find information about the 1925 Birthday Honours to determine who the King was.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: I need to find information about the 1925 Birthday Honours to determine who the King was. \nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:51.850405",
+          "thought": "Now that I have found the document related to the 1925 Birthday Honours, I need to retrieve it to find out who the King was at that time.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: Now that I have found the document related to the 1925 Birthday Honours, I need to retrieve it to find out who the King was at that time.\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.697117",
+          "thought": "Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find information about his birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find information about his birth year.\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.328612",
+          "thought": "Now that I have found a document related to King George V, I need to retrieve it to find out his birth year.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: Now that I have found a document related to King George V, I need to retrieve it to find out his birth year.\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:53.872734",
+          "thought": "Now that I have found the birth year of King George V, I can answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now that I have found the birth year of King George V, I can answer the question.\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.266748",
+      "end_time": "2026-01-26T21:34:53.872788"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0004",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.209067",
+          "thought": "To answer this question, I need to know which King made the 1925 Birthday Honours. This information will help me find the birth year of the King.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to know which King made the 1925 Birthday Honours. This information will help me find the birth year of the King.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.077970",
+          "thought": "The search results didn't provide the information I'm looking for directly. However, I can retrieve the content of the document titled \"1925 Birthday Honours\" to find the name of the King who made the honours.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: The search results didn't provide the information I'm looking for directly. However, I can retrieve the content of the document titled \"1925 Birthday Honours\" to find the name of the King who made the honours.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.582252",
+          "thought": "Now that I know the King who made the 1925 Birthday Honours is King George V, I need to find his birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I know the King who made the 1925 Birthday Honours is King George V, I need to find his birth year.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.593955",
+          "thought": "The search results included a document titled \"George V\", which is likely to contain the birth year of King George V.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The search results included a document titled \"George V\", which is likely to contain the birth year of King George V.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:54.530363",
+          "thought": "Now that I have the birth year of King George V, I can provide the final answer to the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now that I have the birth year of King George V, I can provide the final answer to the question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.267602",
+      "end_time": "2026-01-26T21:34:54.530406"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0005",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.528029",
+          "thought": "To answer this question, I need to find the name of the King who made the 1925 Birthday Honours, and then find his birth year. First, let's search for information about the 1925 Birthday Honours.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to find the name of the King who made the 1925 Birthday Honours, and then find his birth year. First, let's search for information about the 1925 Birthday Honours.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.275977",
+          "thought": "I found a document with the exact title I was looking for, \"1925 Birthday Honours\". Now, I need to retrieve the content of this document to find the name of the King who made the honours.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: I found a document with the exact title I was looking for, \"1925 Birthday Honours\". Now, I need to retrieve the content of this document to find the name of the King who made the honours.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.782012",
+          "thought": "Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find his birth year. Let's search for information about King George V.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I know the King who made the 1925 Birthday Honours was King George V, I need to find his birth year. Let's search for information about King George V.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.470379",
+          "thought": "The search results include a document with the title \"George V\", which is likely to have the information I need. Now, I'll retrieve the content of this document to find the birth year of King George V.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The search results include a document with the title \"George V\", which is likely to have the information I need. Now, I'll retrieve the content of this document to find the birth year of King George V.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:54.331946",
+          "thought": "I now have the birth year of King George V, which is 1865. I can use this information to answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: I now have the birth year of King George V, which is 1865. I can use this information to answer the question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.268910",
+      "end_time": "2026-01-26T21:34:54.331954"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0006",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.454635",
+          "thought": "To answer this question, I need to find information about the King who made the 1925 Birthday Honours. The 1925 Birthday Honours were issued by King George V. Now, I need to find information about King George V's birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to find information about the King who made the 1925 Birthday Honours. The 1925 Birthday Honours were issued by King George V. Now, I need to find information about King George V's birth year.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.117872",
+          "thought": "The search results include a document titled \"George V\", which likely contains information about King George V. I can retrieve the content of this document to find the birth year of King George V.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The search results include a document titled \"George V\", which likely contains information about King George V. I can retrieve the content of this document to find the birth year of King George V.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:53.495909",
+          "thought": "The retrieved document contains the birth year of King George V, which is 1865. I can now answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: The retrieved document contains the birth year of King George V, which is 1865. I can now answer the question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.270603",
+      "end_time": "2026-01-26T21:34:53.495928"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0007",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:50.838250",
+          "thought": "To answer this question, I need to first identify the King who made the 1925 Birthday Honours.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to first identify the King who made the 1925 Birthday Honours. \nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:51.730314",
+          "thought": "Now that I have found a document related to the 1925 Birthday Honours, I need to retrieve it to find out who made the honours.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: Now that I have found a document related to the 1925 Birthday Honours, I need to retrieve it to find out who made the honours. \nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.850489",
+          "thought": "Now that I have found out the King who made the 1925 Birthday Honours was King George V, I need to find his birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I have found out the King who made the 1925 Birthday Honours was King George V, I need to find his birth year. \nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.847577",
+          "thought": "The document \"George V\" seems relevant, I'll retrieve it to find the birth year of King George V.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The document \"George V\" seems relevant, I'll retrieve it to find the birth year of King George V. \nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:54.353906",
+          "thought": "Now that I have found the birth year of King George V, I can answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now that I have found the birth year of King George V, I can answer the question. \nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.271958",
+      "end_time": "2026-01-26T21:34:54.353967"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0008",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.411074",
+          "thought": "To answer this question, I need to identify the King who made the 1925 Birthday Honours and then find the year he was born. I'll start by searching for information about the 1925 Birthday Honours.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer this question, I need to identify the King who made the 1925 Birthday Honours and then find the year he was born. I'll start by searching for information about the 1925 Birthday Honours.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.283697",
+          "thought": "I found a document called \"1925 Birthday Honours\", which is likely to contain information about the King who made the honours. I'll retrieve the content of this document to gather more information.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: I found a document called \"1925 Birthday Honours\", which is likely to contain information about the King who made the honours. I'll retrieve the content of this document to gather more information.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:53.599360",
+          "thought": "Now that I know the King who made the 1925 Birthday Honours is King George V, I need to find the year he was born. I'll search for information about King George V's birth year.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: Now that I know the King who made the 1925 Birthday Honours is King George V, I need to find the year he was born. I'll search for information about King George V's birth year.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:53.991419",
+          "thought": "I found a document called \"George V\", which is likely to contain information about King George V's birth year. I'll retrieve the content of this document to gather more information.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: I found a document called \"George V\", which is likely to contain information about King George V's birth year. I'll retrieve the content of this document to gather more information.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:55.204790",
+          "thought": "Now that I have the birth year of King George V, I can answer the question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now that I have the birth year of King George V, I can answer the question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.274574",
+      "end_time": "2026-01-26T21:34:55.204827"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0009",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.454504",
+          "thought": "To find the answer, I first need to identify the King who made the 1925 Birthday Honours. This would require searching for information related to the 1925 Birthday Honours.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours"
+          },
+          "observation": "Found 9 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To find the answer, I first need to identify the King who made the 1925 Birthday Honours. This would require searching for information related to the 1925 Birthday Honours.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:52.384454",
+          "thought": "The search results include the 1925 Birthday Honours, which is the specific document I need. I should now retrieve the content of this document to find the King who made the honours.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "1925 Birthday Honours"
+          },
+          "observation": "The 1925 Birthday Honours were appointments by King George V to various orders and honours to reward and highlight good works by citizens of the British Empire.  The appointments were made to celebrate the official birthday of The King, and were published in \"The London Gazette\" on 3 June 1925.",
+          "raw_response": "Thought: The search results include the 1925 Birthday Honours, which is the specific document I need. I should now retrieve the content of this document to find the King who made the honours.\n\nAction: Retrieve\nAction Input: {\"title\": \"1925 Birthday Honours\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:53.669815",
+          "thought": "The content of the 1925 Birthday Honours document reveals that the King who made the honours was King George V. To find the birth year of King George V, I need to search for this specific information.",
+          "action": "Search",
+          "action_input": {
+            "query": "King George V birth year"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: The content of the 1925 Birthday Honours document reveals that the King who made the honours was King George V. To find the birth year of King George V, I need to search for this specific information.\n\nAction: Search\nAction Input: {\"query\": \"King George V birth year\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-26T21:34:54.951259",
+          "thought": "The search results include a document titled \"George V\", which likely contains the birth year of King George V. I should now retrieve the content of this document to find the birth year.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: The search results include a document titled \"George V\", which likely contains the birth year of King George V. I should now retrieve the content of this document to find the birth year.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-26T21:34:55.701554",
+          "thought": "The content of the George V document reveals that King George V was born in 1865. This is the answer to the original question.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: The content of the George V document reveals that King George V was born in 1865. This is the answer to the original question.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.275572",
+      "end_time": "2026-01-26T21:34:55.701601"
+    },
+    {
+      "run_id": "5a7625e8554299109176e66a_run_0010",
+      "task_id": "5a7625e8554299109176e66a",
+      "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+      "provider": "together",
+      "question": "In which year was the King who made the 1925 Birthday Honours born?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-26T21:34:51.151931",
+          "thought": "To answer the question, I need to find out which King made the 1925 Birthday Honours. Then, I can look up the birth year of that King.",
+          "action": "Search",
+          "action_input": {
+            "query": "1925 Birthday Honours King"
+          },
+          "observation": "Found 10 relevant document(s): 2017 Birthday Honours, 2014 Birthday Honours, 2015 Birthday Honours, 2016 Birthday Honours, Birthday Honours, 1965 Birthday Honours, George V, 1951 Birthday Honours, 2013 Birthday Honours, 1925 Birthday Honours",
+          "raw_response": "Thought: To answer the question, I need to find out which King made the 1925 Birthday Honours. Then, I can look up the birth year of that King.\n\nAction: Search\nAction Input: {\"query\": \"1925 Birthday Honours King\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-26T21:34:51.997028",
+          "thought": "From the search results, I found a document titled \"George V\" which is likely related to the King who made the 1925 Birthday Honours. I will now retrieve the full content of this document to confirm and get the birth year.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "George V"
+          },
+          "observation": "George V (George Frederick Ernest Albert; 3 June 1865 – 20 January 1936) was King of the United Kingdom and the British Dominions, and Emperor of India, from 6 May 1910 until his death in 1936.",
+          "raw_response": "Thought: From the search results, I found a document titled \"George V\" which is likely related to the King who made the 1925 Birthday Honours. I will now retrieve the full content of this document to confirm and get the birth year.\n\nAction: Retrieve\nAction Input: {\"title\": \"George V\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-26T21:34:52.452250",
+          "thought": "Now I have the birth year of the King who made the 1925 Birthday Honours, which is 1865.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "1865"
+          },
+          "observation": "Task completed. Final answer: 1865",
+          "raw_response": "Thought: Now I have the birth year of the King who made the 1925 Birthday Honours, which is 1865.\n\nAction: Finish\nAction Input: {\"answer\": \"1865\"}"
+        }
+      ],
+      "final_answer": "1865",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-26T21:34:50.277182",
+      "end_time": "2026-01-26T21:34:52.452287"
+    }
+  ]
+}

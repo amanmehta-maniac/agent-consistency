@@ -1,0 +1,695 @@
+{
+  "task_id": "5a7d54165542995f4f402256",
+  "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+  "answer": "Yellowcraig",
+  "type": "bridge",
+  "level": "hard",
+  "supporting_facts": {
+    "title": [
+      "Yellowcraigs",
+      "Yellowcraigs",
+      "Yellowcraigs",
+      "Dirleton Castle"
+    ],
+    "sent_id": [
+      0,
+      1,
+      2,
+      0
+    ]
+  },
+  "context_titles": [
+    "Lothian and Borders",
+    "Scottish Borders",
+    "Dirleton Kirk",
+    "Dirleton",
+    "Haddington, East Lothian",
+    "Yellowcraigs",
+    "Dirleton Castle",
+    "Lord Haliburton of Dirleton",
+    "St. Mary's Priory (Lothian)",
+    "John Home Robertson"
+  ],
+  "model": "gpt-4o",
+  "provider": "openai",
+  "n_runs": 10,
+  "runs": [
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0001",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:08:57.410291",
+          "thought": "I need to find information about the location of Dirleton Castle in East Lothian, Scotland, and specifically which coastal area it borders on the south side. I will start by searching for information about Dirleton Castle and its geographical location.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle location coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: I need to find information about the location of Dirleton Castle in East Lothian, Scotland, and specifically which coastal area it borders on the south side. I will start by searching for information about Dirleton Castle and its geographical location.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle location coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:08:59.269573",
+          "thought": "The document titled \"Dirleton Castle\" is likely to contain specific information about the location of the castle and the coastal area it borders. I should retrieve the full content of this document to find the answer.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: The document titled \"Dirleton Castle\" is likely to contain specific information about the location of the castle and the coastal area it borders. I should retrieve the full content of this document to find the answer.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:01.301639",
+          "thought": "The retrieved document did not explicitly mention the coastal area that Dirleton Castle borders on the south side. I should search for more information about the coastal geography near Dirleton, East Lothian, to identify the specific coastal area.",
+          "action": "Search",
+          "action_input": {
+            "query": "coastal area near Dirleton East Lothian"
+          },
+          "observation": "Found 9 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian)",
+          "raw_response": "Thought: The retrieved document did not explicitly mention the coastal area that Dirleton Castle borders on the south side. I should search for more information about the coastal geography near Dirleton, East Lothian, to identify the specific coastal area.\n\nAction: Search\nAction Input: {\"query\": \"coastal area near Dirleton East Lothian\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:02.912775",
+          "thought": "The document titled \"Yellowcraigs\" seems relevant because Yellowcraigs is a known beach area near Dirleton. This document might contain information about the coastal geography near Dirleton Castle. I should retrieve this document to find the answer.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The document titled \"Yellowcraigs\" seems relevant because Yellowcraigs is a known beach area near Dirleton. This document might contain information about the coastal geography near Dirleton Castle. I should retrieve this document to find the answer.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:09:04.494047",
+          "thought": "The document confirms that Yellowcraigs, also known as Broad Sands Bay, is the coastal area located to the north of Dirleton and Dirleton Castle. Therefore, Dirleton Castle borders Yellowcraigs on the south side.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle borders the Yellowcraigs coastal area, also known as Broad Sands Bay, on the south side."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle borders the Yellowcraigs coastal area, also known as Broad Sands Bay, on the south side.",
+          "raw_response": "Thought: The document confirms that Yellowcraigs, also known as Broad Sands Bay, is the coastal area located to the north of Dirleton and Dirleton Castle. Therefore, Dirleton Castle borders Yellowcraigs on the south side.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle borders the Yellowcraigs coastal area, also known as Broad Sands Bay, on the south side.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle borders the Yellowcraigs coastal area, also known as Broad Sands Bay, on the south side.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:08:55.974080",
+      "end_time": "2026-01-27T10:09:04.494118"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0002",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:08:57.133685",
+          "thought": "To answer this question, I need to find information about Dirleton Castle in East Lothian, Scotland, and determine which coastal area it borders on the south side.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: To answer this question, I need to find information about Dirleton Castle in East Lothian, Scotland, and determine which coastal area it borders on the south side.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:08:58.827385",
+          "thought": "I found a document titled \"Dirleton Castle\" which likely contains relevant information about the location and surrounding areas of Dirleton Castle. I should retrieve this document to find out which coastal area the fortress borders.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: I found a document titled \"Dirleton Castle\" which likely contains relevant information about the location and surrounding areas of Dirleton Castle. I should retrieve this document to find out which coastal area the fortress borders.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:01.290441",
+          "thought": "The retrieved document provides general information about Dirleton Castle's location but does not specify the coastal area it borders. I should look for additional documents that may mention the coastal area. The document titled \"Yellowcraigs\" might be relevant since Yellowcraigs is a known coastal area near Dirleton.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The retrieved document provides general information about Dirleton Castle's location but does not specify the coastal area it borders. I should look for additional documents that may mention the coastal area. The document titled \"Yellowcraigs\" might be relevant since Yellowcraigs is a known coastal area near Dirleton.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:03.064557",
+          "thought": "The document confirms that Yellowcraig, also known as Broad Sands Bay, is the coastal area located to the north of Dirleton Castle. Therefore, Dirleton Castle borders the south side of Yellowcraig.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, a coastal area in East Lothian, Scotland."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, a coastal area in East Lothian, Scotland.",
+          "raw_response": "Thought: The document confirms that Yellowcraig, also known as Broad Sands Bay, is the coastal area located to the north of Dirleton Castle. Therefore, Dirleton Castle borders the south side of Yellowcraig.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, a coastal area in East Lothian, Scotland.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, a coastal area in East Lothian, Scotland.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:08:55.982527",
+      "end_time": "2026-01-27T10:09:03.064611"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0003",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:08.721985",
+          "thought": "I should look for information about Dirleton and its geographical location to determine what coastal area it borders on the south side.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton East Lothian Scotland coastal area"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: I should look for information about Dirleton and its geographical location to determine what coastal area it borders on the south side.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton East Lothian Scotland coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:15.975812",
+          "thought": "The document titled \"Dirleton Castle\" is likely to have relevant information about the geographical location and surrounding areas of Dirleton. I should retrieve this document to find the coastal area it borders.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: The document titled \"Dirleton Castle\" is likely to have relevant information about the geographical location and surrounding areas of Dirleton. I should retrieve this document to find the coastal area it borders.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:22.031289",
+          "thought": "The document about Dirleton Castle does not provide specific information about the coastal area it borders. I should search for more information or retrieve another document, possibly related to the geographical features of Dirleton or East Lothian.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: The document about Dirleton Castle does not provide specific information about the coastal area it borders. I should search for more information or retrieve another document, possibly related to the geographical features of Dirleton or East Lothian.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton coastal area\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:24.044407",
+          "thought": "The document titled \"Yellowcraigs\" may contain information about the coastal area near Dirleton since Yellowcraigs is a known beach area in East Lothian. I should retrieve this document to gather more details.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The document titled \"Yellowcraigs\" may contain information about the coastal area near Dirleton since Yellowcraigs is a known beach area in East Lothian. I should retrieve this document to gather more details.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:09:26.615515",
+          "thought": "The document confirms that Yellowcraig, also known as Broad Sands Bay, is the coastal area bordered to the south by the village of Dirleton and Dirleton Castle. It lies within the Firth of Forth Site of Special Scientific Interest.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle in East Lothian, Scotland, borders the south side of the Yellowcraig coastal area, also known as Broad Sands Bay, which is part of the Firth of Forth."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle in East Lothian, Scotland, borders the south side of the Yellowcraig coastal area, also known as Broad Sands Bay, which is part of the Firth of Forth.",
+          "raw_response": "Thought: The document confirms that Yellowcraig, also known as Broad Sands Bay, is the coastal area bordered to the south by the village of Dirleton and Dirleton Castle. It lies within the Firth of Forth Site of Special Scientific Interest.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle in East Lothian, Scotland, borders the south side of the Yellowcraig coastal area, also known as Broad Sands Bay, which is part of the Firth of Forth.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle in East Lothian, Scotland, borders the south side of the Yellowcraig coastal area, also known as Broad Sands Bay, which is part of the Firth of Forth.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:06.502292",
+      "end_time": "2026-01-27T10:09:26.615543"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0004",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:08.718445",
+          "thought": "I need to find information about the geographical location and surroundings of the Dirleton Castle in East Lothian, Scotland. This includes identifying the coastal area it borders to the south.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area south side"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: I need to find information about the geographical location and surroundings of the Dirleton Castle in East Lothian, Scotland. This includes identifying the coastal area it borders to the south.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area south side\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:15.967096",
+          "thought": "I found a document titled \"Dirleton Castle\" which likely contains specific information about the castle, including its geographical surroundings and coastal area. I should retrieve the content of this document to find the answer.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: I found a document titled \"Dirleton Castle\" which likely contains specific information about the castle, including its geographical surroundings and coastal area. I should retrieve the content of this document to find the answer.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:22.062727",
+          "thought": "The document retrieved does not specify the coastal area south of Dirleton Castle. I should look into another document from the search results that might provide details about the surrounding geography, such as \"Dirleton\" or \"Yellowcraigs.\"",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The document retrieved does not specify the coastal area south of Dirleton Castle. I should look into another document from the search results that might provide details about the surrounding geography, such as \"Dirleton\" or \"Yellowcraigs.\"\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:24.538582",
+          "thought": "The document \"Yellowcraigs\" provides the information needed. Yellowcraig, also known as Broad Sands Bay, is the coastal area bordered to the south by the village of Dirleton and Dirleton Castle.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, which is a coastal area."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, which is a coastal area.",
+          "raw_response": "Thought: The document \"Yellowcraigs\" provides the information needed. Yellowcraig, also known as Broad Sands Bay, is the coastal area bordered to the south by the village of Dirleton and Dirleton Castle.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, which is a coastal area.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle borders on the south side of Yellowcraig, also known as Broad Sands Bay, which is a coastal area.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:06.508271",
+      "end_time": "2026-01-27T10:09:24.538602"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0005",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:30.949102",
+          "thought": "I need to find information about the medieval fortress in Dirleton, East Lothian, Scotland, specifically its geographical location and its relation to nearby coastal areas.",
+          "action": "Search",
+          "action_input": {
+            "query": "medieval fortress Dirleton East Lothian Scotland coastal area"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: I need to find information about the medieval fortress in Dirleton, East Lothian, Scotland, specifically its geographical location and its relation to nearby coastal areas.\nAction: Search\nAction Input: {\"query\": \"medieval fortress Dirleton East Lothian Scotland coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:32.926734",
+          "thought": "I should retrieve information from the document titled \"Dirleton Castle\" as it likely contains details about the medieval fortress in Dirleton and its geographical location in relation to coastal areas.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: I should retrieve information from the document titled \"Dirleton Castle\" as it likely contains details about the medieval fortress in Dirleton and its geographical location in relation to coastal areas.\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:34.911341",
+          "thought": "The retrieved information does not specify the coastal area that Dirleton Castle borders on the south side. I should look for more specific details about the geographical location of Dirleton Castle and its proximity to any coastal area.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area Scotland"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: The retrieved information does not specify the coastal area that Dirleton Castle borders on the south side. I should look for more specific details about the geographical location of Dirleton Castle and its proximity to any coastal area.\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area Scotland\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:36.890132",
+          "thought": "I should retrieve information from the document titled \"Dirleton\" as it might provide more specific geographical information about the area around Dirleton Castle, including any nearby coastal areas.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton"
+          },
+          "observation": "Dirleton (Scottish Gaelic 'Duighreach') is a village and parish in East Lothian, Scotland approximately 20 mi east of Edinburgh on the A198.  It contains 7500 acre .  Dirleton lies between North Berwick (east), Gullane (west), Fenton Barns (south) and the Yellowcraigs nature reserve, Archerfield Estate and the Firth of Forth (north).  Gullane parish was joined to Dirleton parish in 1612 by an Act of Parliament because \"Golyn (as it was anciently spelt) is ane decaying toun, and Dirleton is ane thriven place.\"",
+          "raw_response": "Thought: I should retrieve information from the document titled \"Dirleton\" as it might provide more specific geographical information about the area around Dirleton Castle, including any nearby coastal areas.\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:09:39.522476",
+          "thought": "The document mentions that Dirleton lies between the Yellowcraigs nature reserve, Archerfield Estate, and the Firth of Forth to the north. This indicates that the Firth of Forth is the coastal area near Dirleton Castle.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle in East Lothian, Scotland, borders the Firth of Forth on the north side."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle in East Lothian, Scotland, borders the Firth of Forth on the north side.",
+          "raw_response": "Thought: The document mentions that Dirleton lies between the Yellowcraigs nature reserve, Archerfield Estate, and the Firth of Forth to the north. This indicates that the Firth of Forth is the coastal area near Dirleton Castle. \n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle in East Lothian, Scotland, borders the Firth of Forth on the north side.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle in East Lothian, Scotland, borders the Firth of Forth on the north side.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:28.632203",
+      "end_time": "2026-01-27T10:09:39.522518"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0006",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:31.268707",
+          "thought": "To answer this question, I need to identify the coastal area that is located to the south of Dirleton, East Lothian, Scotland, where the medieval fortress is situated. I'll start by searching for information on Dirleton and its geographical surroundings.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton East Lothian Scotland coastal area"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: To answer this question, I need to identify the coastal area that is located to the south of Dirleton, East Lothian, Scotland, where the medieval fortress is situated. I'll start by searching for information on Dirleton and its geographical surroundings.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton East Lothian Scotland coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:33.827116",
+          "thought": "The search results include a document titled \"Dirleton Castle,\" which is likely to contain information about the medieval fortress and its surrounding area. I'll retrieve this document to find details on the coastal area bordering Dirleton.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: The search results include a document titled \"Dirleton Castle,\" which is likely to contain information about the medieval fortress and its surrounding area. I'll retrieve this document to find details on the coastal area bordering Dirleton.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:36.438776",
+          "thought": "The document retrieved provides background information on Dirleton Castle but does not specify the coastal area to its south. I need to find more specific geographical details about the surrounding coastal area of Dirleton. I'll search for information about the geography or coastal features near Dirleton.",
+          "action": "Search",
+          "action_input": {
+            "query": "coastal area near Dirleton East Lothian"
+          },
+          "observation": "Found 9 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian)",
+          "raw_response": "Thought: The document retrieved provides background information on Dirleton Castle but does not specify the coastal area to its south. I need to find more specific geographical details about the surrounding coastal area of Dirleton. I'll search for information about the geography or coastal features near Dirleton.\n\nAction: Search\nAction Input: {\"query\": \"coastal area near Dirleton East Lothian\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:38.112975",
+          "thought": "The search results include a document titled \"Yellowcraigs,\" which might refer to a coastal feature or area. I will retrieve this document to see if it provides the information about the coastal area south of Dirleton.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The search results include a document titled \"Yellowcraigs,\" which might refer to a coastal feature or area. I will retrieve this document to see if it provides the information about the coastal area south of Dirleton.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:09:40.527429",
+          "thought": "The document retrieved provides the necessary information. Yellowcraig, also known as Broad Sands Bay, is the coastal area that lies to the south of Dirleton, where Dirleton Castle is located.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of Yellowcraig, also known as Broad Sands Bay."
+          },
+          "observation": "Task completed. Final answer: The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of Yellowcraig, also known as Broad Sands Bay.",
+          "raw_response": "Thought: The document retrieved provides the necessary information. Yellowcraig, also known as Broad Sands Bay, is the coastal area that lies to the south of Dirleton, where Dirleton Castle is located.\n\nAction: Finish\nAction Input: {\"answer\": \"The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of Yellowcraig, also known as Broad Sands Bay.\"}"
+        }
+      ],
+      "final_answer": "The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of Yellowcraig, also known as Broad Sands Bay.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:28.643559",
+      "end_time": "2026-01-27T10:09:40.527479"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0007",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:44.166162",
+          "thought": "To answer the question about the medieval fortress in Dirleton and the coastal area it borders, I need to find specific information about Dirleton Castle and its geographical location.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle location coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: To answer the question about the medieval fortress in Dirleton and the coastal area it borders, I need to find specific information about Dirleton Castle and its geographical location.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle location coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:45.525003",
+          "thought": "I found a document titled \"Dirleton Castle\" that likely contains information about its location and the coastal area it borders. I should retrieve this document to get the details.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: I found a document titled \"Dirleton Castle\" that likely contains information about its location and the coastal area it borders. I should retrieve this document to get the details.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:47.533992",
+          "thought": "The retrieved document provides information about Dirleton Castle's location in terms of proximity to North Berwick and Edinburgh but does not mention the specific coastal area it borders. I need to find a document that specifically mentions the coastal area near Dirleton.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: The retrieved document provides information about Dirleton Castle's location in terms of proximity to North Berwick and Edinburgh but does not mention the specific coastal area it borders. I need to find a document that specifically mentions the coastal area near Dirleton.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:48.962119",
+          "thought": "The document titled \"Yellowcraigs\" might provide information about the coastal area near Dirleton Castle, as Yellowcraigs is known to be a beach or coastal area in East Lothian.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The document titled \"Yellowcraigs\" might provide information about the coastal area near Dirleton Castle, as Yellowcraigs is known to be a beach or coastal area in East Lothian.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:09:51.441434",
+          "thought": "The document confirms that Yellowcraigs, also known as Broad Sands Bay, is a coastal area bordered by the village of Dirleton and Dirleton Castle to the south. This answers the question about the coastal area south of which Dirleton Castle is located.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle in East Lothian, Scotland, borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle in East Lothian, Scotland, borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.",
+          "raw_response": "Thought: The document confirms that Yellowcraigs, also known as Broad Sands Bay, is a coastal area bordered by the village of Dirleton and Dirleton Castle to the south. This answers the question about the coastal area south of which Dirleton Castle is located.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle in East Lothian, Scotland, borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle in East Lothian, Scotland, borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:42.549181",
+      "end_time": "2026-01-27T10:09:51.441478"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0008",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:44.159341",
+          "thought": "To answer this question, I need to find information about the geographical location of Dirleton, East Lothian, Scotland, and specifically which coastal area is on its south side. I will start by searching for information about Dirleton and its surroundings.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton East Lothian Scotland coastal area"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: To answer this question, I need to find information about the geographical location of Dirleton, East Lothian, Scotland, and specifically which coastal area is on its south side. I will start by searching for information about Dirleton and its surroundings.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton East Lothian Scotland coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:45.802427",
+          "thought": "The document titled \"Dirleton\" or \"Dirleton Castle\" is likely to contain information about the geographical location and surroundings of Dirleton, including any coastal area nearby. I will retrieve information from these documents to find the answer.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton"
+          },
+          "observation": "Dirleton (Scottish Gaelic 'Duighreach') is a village and parish in East Lothian, Scotland approximately 20 mi east of Edinburgh on the A198.  It contains 7500 acre .  Dirleton lies between North Berwick (east), Gullane (west), Fenton Barns (south) and the Yellowcraigs nature reserve, Archerfield Estate and the Firth of Forth (north).  Gullane parish was joined to Dirleton parish in 1612 by an Act of Parliament because \"Golyn (as it was anciently spelt) is ane decaying toun, and Dirleton is ane thriven place.\"",
+          "raw_response": "Thought: The document titled \"Dirleton\" or \"Dirleton Castle\" is likely to contain information about the geographical location and surroundings of Dirleton, including any coastal area nearby. I will retrieve information from these documents to find the answer.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:09:48.403053",
+          "thought": "The document mentions that Dirleton is north of the Yellowcraigs nature reserve, Archerfield Estate, and the Firth of Forth. Since the question asks about the coastal area on the south side, this suggests that the coastal area related to Dirleton itself is the Firth of Forth, which lies to the north, not south. I need to verify if there is any specific coastal area on the south side of Dirleton by looking at more specific details or maps.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: The document mentions that Dirleton is north of the Yellowcraigs nature reserve, Archerfield Estate, and the Firth of Forth. Since the question asks about the coastal area on the south side, this suggests that the coastal area related to Dirleton itself is the Firth of Forth, which lies to the north, not south. I need to verify if there is any specific coastal area on the south side of Dirleton by looking at more specific details or maps.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:09:53.990373",
+          "thought": "The retrieved documents primarily provide information about the location and history of Dirleton and Dirleton Castle but do not specify a coastal area to the south. Given the known geographical location of Dirleton, I can deduce that there is no specific coastal area to the south; instead, it is surrounded by land areas such as Fenton Barns to the south. The primary coastal area associated with Dirleton is the Firth of Forth to the north.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "The medieval fortress in Dirleton, East Lothian, Scotland is bordered on the south side by Fenton Barns, a land area. The primary coastal area associated with Dirleton is the Firth of Forth, which lies to the north."
+          },
+          "observation": "Task completed. Final answer: The medieval fortress in Dirleton, East Lothian, Scotland is bordered on the south side by Fenton Barns, a land area. The primary coastal area associated with Dirleton is the Firth of Forth, which lies to the north.",
+          "raw_response": "Thought: The retrieved documents primarily provide information about the location and history of Dirleton and Dirleton Castle but do not specify a coastal area to the south. Given the known geographical location of Dirleton, I can deduce that there is no specific coastal area to the south; instead, it is surrounded by land areas such as Fenton Barns to the south. The primary coastal area associated with Dirleton is the Firth of Forth to the north.\n\nAction: Finish\nAction Input: {\"answer\": \"The medieval fortress in Dirleton, East Lothian, Scotland is bordered on the south side by Fenton Barns, a land area. The primary coastal area associated with Dirleton is the Firth of Forth, which lies to the north.\"}"
+        }
+      ],
+      "final_answer": "The medieval fortress in Dirleton, East Lothian, Scotland is bordered on the south side by Fenton Barns, a land area. The primary coastal area associated with Dirleton is the Firth of Forth, which lies to the north.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:42.560899",
+      "end_time": "2026-01-27T10:09:53.990428"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0009",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:57.660472",
+          "thought": "To answer this question, I need to find information about Dirleton and its geographical location, specifically what coastal area it borders on the south side. I'll start by searching for Dirleton's location details.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton East Lothian Scotland coastal area"
+          },
+          "observation": "Found 10 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Haddington, East Lothian, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton, St. Mary's Priory (Lothian), John Home Robertson",
+          "raw_response": "Thought: To answer this question, I need to find information about Dirleton and its geographical location, specifically what coastal area it borders on the south side. I'll start by searching for Dirleton's location details.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton East Lothian Scotland coastal area\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:59.086666",
+          "thought": "The document titled \"Dirleton Castle\" is likely to contain specific information about the medieval fortress in Dirleton and its geographical location relative to coastal areas. I'll retrieve this document to find the information needed.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: The document titled \"Dirleton Castle\" is likely to contain specific information about the medieval fortress in Dirleton and its geographical location relative to coastal areas. I'll retrieve this document to find the information needed.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:10:00.964841",
+          "thought": "The retrieved document provides some historical context and location details about Dirleton Castle but does not mention the specific coastal area it borders. I should search for more information regarding the coastal area near Dirleton.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: The retrieved document provides some historical context and location details about Dirleton Castle but does not mention the specific coastal area it borders. I should search for more information regarding the coastal area near Dirleton.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:10:02.896991",
+          "thought": "The document titled \"Dirleton\" might contain additional geographical information about the area surrounding Dirleton, including any nearby coastal areas. I'll retrieve this document to find the information needed.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton"
+          },
+          "observation": "Dirleton (Scottish Gaelic 'Duighreach') is a village and parish in East Lothian, Scotland approximately 20 mi east of Edinburgh on the A198.  It contains 7500 acre .  Dirleton lies between North Berwick (east), Gullane (west), Fenton Barns (south) and the Yellowcraigs nature reserve, Archerfield Estate and the Firth of Forth (north).  Gullane parish was joined to Dirleton parish in 1612 by an Act of Parliament because \"Golyn (as it was anciently spelt) is ane decaying toun, and Dirleton is ane thriven place.\"",
+          "raw_response": "Thought: The document titled \"Dirleton\" might contain additional geographical information about the area surrounding Dirleton, including any nearby coastal areas. I'll retrieve this document to find the information needed.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:10:05.229080",
+          "thought": "The document indicates that Dirleton lies near the Yellowcraigs nature reserve and the Firth of Forth to the north. This suggests that the coastal area bordered by Dirleton Castle on the south side is the Firth of Forth. I can now provide the final answer.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of the Firth of Forth."
+          },
+          "observation": "Task completed. Final answer: The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of the Firth of Forth.",
+          "raw_response": "Thought: The document indicates that Dirleton lies near the Yellowcraigs nature reserve and the Firth of Forth to the north. This suggests that the coastal area bordered by Dirleton Castle on the south side is the Firth of Forth. I can now provide the final answer.\n\nAction: Finish\nAction Input: {\"answer\": \"The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of the Firth of Forth.\"}"
+        }
+      ],
+      "final_answer": "The medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of the Firth of Forth.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:56.008620",
+      "end_time": "2026-01-27T10:10:05.229114"
+    },
+    {
+      "run_id": "5a7d54165542995f4f402256_run_0010",
+      "task_id": "5a7d54165542995f4f402256",
+      "model": "gpt-4o",
+      "provider": "openai",
+      "question": "A medieval fortress in Dirleton, East Lothian, Scotland borders on the south side of what coastal area?",
+      "steps": [
+        {
+          "step_number": 1,
+          "timestamp": "2026-01-27T10:09:57.655298",
+          "thought": "To answer this question, I need to find information about the location of Dirleton Castle and the geographical features surrounding it. I will search for information about Dirleton Castle in East Lothian, Scotland.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle location"
+          },
+          "observation": "Found 4 relevant document(s): Dirleton Kirk, Dirleton, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: To answer this question, I need to find information about the location of Dirleton Castle and the geographical features surrounding it. I will search for information about Dirleton Castle in East Lothian, Scotland.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle location\"}"
+        },
+        {
+          "step_number": 2,
+          "timestamp": "2026-01-27T10:09:59.617033",
+          "thought": "I have found a document titled \"Dirleton Castle\" which likely contains information about its location and surrounding geographical features. I will retrieve and review this document to find the coastal area that borders Dirleton Castle.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Dirleton Castle"
+          },
+          "observation": "Dirleton Castle is a medieval fortress in the village of Dirleton, East Lothian, Scotland.  It lies around 2 mi west of North Berwick, and around 19 mi east of Edinburgh.  The oldest parts of the castle date to the 13th century, and it was abandoned by the end of the 17th century.",
+          "raw_response": "Thought: I have found a document titled \"Dirleton Castle\" which likely contains information about its location and surrounding geographical features. I will retrieve and review this document to find the coastal area that borders Dirleton Castle.\n\nAction: Retrieve\nAction Input: {\"title\": \"Dirleton Castle\"}"
+        },
+        {
+          "step_number": 3,
+          "timestamp": "2026-01-27T10:10:01.722560",
+          "thought": "The retrieved document provides some location details about Dirleton Castle but does not mention the specific coastal area it borders. I need to perform another search to identify the coastal area adjacent to Dirleton Castle.",
+          "action": "Search",
+          "action_input": {
+            "query": "Dirleton Castle coastal area"
+          },
+          "observation": "Found 7 relevant document(s): Lothian and Borders, Scottish Borders, Dirleton Kirk, Dirleton, Yellowcraigs, Dirleton Castle, Lord Haliburton of Dirleton",
+          "raw_response": "Thought: The retrieved document provides some location details about Dirleton Castle but does not mention the specific coastal area it borders. I need to perform another search to identify the coastal area adjacent to Dirleton Castle.\n\nAction: Search\nAction Input: {\"query\": \"Dirleton Castle coastal area\"}"
+        },
+        {
+          "step_number": 4,
+          "timestamp": "2026-01-27T10:10:03.915477",
+          "thought": "The document titled \"Yellowcraigs\" might contain information about the coastal area near Dirleton Castle since Yellowcraigs is known to be a beach area in East Lothian. I will retrieve this document to see if it provides the needed information.",
+          "action": "Retrieve",
+          "action_input": {
+            "title": "Yellowcraigs"
+          },
+          "observation": "Yellowcraig, less commonly known as Broad Sands Bay, is a coastal area of forest, beach and grassland in East Lothian, south-east Scotland.  Yellowcraig is partly within the Firth of Forth Site of Special Scientific Interest (SSSI).  It is bordered to the north by the Firth of Forth, to the south by the village of Dirleton and Dirleton Castle, to the east by the North Berwick West Links golf course, and to the west by the Archerfield Estate and Links golf courses.",
+          "raw_response": "Thought: The document titled \"Yellowcraigs\" might contain information about the coastal area near Dirleton Castle since Yellowcraigs is known to be a beach area in East Lothian. I will retrieve this document to see if it provides the needed information.\n\nAction: Retrieve\nAction Input: {\"title\": \"Yellowcraigs\"}"
+        },
+        {
+          "step_number": 5,
+          "timestamp": "2026-01-27T10:10:06.539965",
+          "thought": "The document confirms that Yellowcraigs, also known as Broad Sands Bay, is the coastal area bordering the south side of Dirleton Castle. It is located within the Firth of Forth Site of Special Scientific Interest.",
+          "action": "Finish",
+          "action_input": {
+            "answer": "Dirleton Castle borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area."
+          },
+          "observation": "Task completed. Final answer: Dirleton Castle borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.",
+          "raw_response": "Thought: The document confirms that Yellowcraigs, also known as Broad Sands Bay, is the coastal area bordering the south side of Dirleton Castle. It is located within the Firth of Forth Site of Special Scientific Interest.\n\nAction: Finish\nAction Input: {\"answer\": \"Dirleton Castle borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.\"}"
+        }
+      ],
+      "final_answer": "Dirleton Castle borders on the south side of Yellowcraigs, also known as Broad Sands Bay, which is part of the Firth of Forth coastal area.",
+      "success": true,
+      "error": null,
+      "start_time": "2026-01-27T10:09:56.020729",
+      "end_time": "2026-01-27T10:10:06.540007"
+    }
+  ]
+}
