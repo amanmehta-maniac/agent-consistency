@@ -1,0 +1,32 @@
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of Key Findings}
+\label{tab:summary}
+\begin{tabular}{lccc}
+\toprule
+Metric & Claude 4.5 & Llama-3.1-70B & Ratio \\
+\midrule
+\multicolumn{4}{l}{\textit{Performance}} \\
+Accuracy & 58\% & 4\% & 14.5$\times$ \\
+Submission Rate & 100\% & 100\% & 1.0$\times$ \\
+\midrule
+\multicolumn{4}{l}{\textit{Consistency}} \\
+CV (step count) & 15.2\% & 47.0\% & 3.1$\times$ better \\
+Unique sequences & 100\% & 100\% & -- \\
+\midrule
+\multicolumn{4}{l}{\textit{Efficiency}} \\
+Avg steps & 46.1 & 17.0 & 2.7$\times$ slower \\
+Avg cost & \$2.78 & \$0.11 & 25$\times$ higher \\
+\midrule
+\multicolumn{4}{l}{\textit{Behavior}} \\
+EXPLORE phase & 34\% & 9\% & 3.8$\times$ \\
+UNDERSTAND phase & 30\% & 18\% & 1.7$\times$ \\
+Empty patches & 0\% & 21\% & -- \\
+\midrule
+\multicolumn{4}{l}{\textit{Statistical Tests}} \\
+t-test & \multicolumn{3}{c}{t = -6.75, p $<$ 0.0001} \\
+Effect size & \multicolumn{3}{c}{Cohen's d = -3.02 (large)} \\
+\bottomrule
+\end{tabular}
+\end{table}

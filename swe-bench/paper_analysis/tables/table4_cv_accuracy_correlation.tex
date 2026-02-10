@@ -1,0 +1,27 @@
+
+\begin{table}[htbp]
+\centering
+\caption{CV-Accuracy Correlation Analysis}
+\label{tab:cv_accuracy}
+\begin{tabular}{lcccc}
+\toprule
+Task ID & Claude CV & Claude Acc & Llama CV & Llama Acc \\
+\midrule
+astropy-12907 & 20.7\% & 100\% & 66.6\% & 0\% \\
+astropy-13033 & 14.2\% & 60\% & 44.4\% & 0\% \\
+astropy-13236 & 27.0\% & 0\% & 38.8\% & 25\% \\
+astropy-13398 & 8.8\% & 0\% & 47.0\% & 0\% \\
+astropy-13453 & 14.3\% & 100\% & 28.7\% & 0\% \\
+astropy-13579 & 10.5\% & 100\% & 47.5\% & 0\% \\
+astropy-13977 & 14.6\% & 0\% & 37.7\% & 0\% \\
+astropy-14096 & 17.3\% & 100\% & 31.1\% & 0\% \\
+astropy-14182 & 12.4\% & 20\% & 61.1\% & 0\% \\
+astropy-14309 & 12.0\% & 100\% & 67.2\% & 33\% \\
+
+\midrule
+\multicolumn{5}{l}{\textit{Pearson correlation (CV vs Accuracy):}} \\
+\multicolumn{5}{l}{Claude: r = -0.100, p = 0.784} \\
+\multicolumn{5}{l}{Llama: r = 0.301, p = 0.399} \\
+\bottomrule
+\end{tabular}
+\end{table}

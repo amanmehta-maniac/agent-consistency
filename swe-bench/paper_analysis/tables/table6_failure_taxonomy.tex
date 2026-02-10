@@ -1,0 +1,17 @@
+
+\begin{table}[htbp]
+\centering
+\caption{Failure Mode Taxonomy}
+\label{tab:failure_taxonomy}
+\begin{tabular}{llcc}
+\toprule
+Failure Mode & Description & Claude & Llama \\
+\midrule
+WRONG\_FIX & Submitted patch with incorrect logic & 21 (100\%) & 37 (77\%) \\
+EMPTY\_PATCH & No actual code changes made & 0 (0\%) & 10 (21\%) \\
+LOOP\_DEATH & Stuck in repetitive action loop & 0 (0\%) & 1 (2\%) \\
+\midrule
+\textbf{Total Failures} & & \textbf{21} & \textbf{48} \\
+\bottomrule
+\end{tabular}
+\end{table}

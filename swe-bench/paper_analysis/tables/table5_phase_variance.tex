@@ -1,0 +1,23 @@
+
+\begin{table}[htbp]
+\centering
+\caption{Phase-wise Step Allocation and Variance}
+\label{tab:phase_variance}
+\begin{tabular}{lcccccc}
+\toprule
+ & \multicolumn{3}{c}{Claude} & \multicolumn{3}{c}{Llama} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+Phase & Mean & \% & CV & Mean & \% & CV \\
+\midrule
+EXPLORE & 15.5 & 34\% & 42\% & 1.5 & 9\% & 123\% \\
+LOCATE & 7.1 & 15\% & 43\% & 2.8 & 16\% & 59\% \\
+UNDERSTAND & 14.0 & 30\% & 23\% & 3.0 & 18\% & 101\% \\
+EDIT & 5.8 & 13\% & 84\% & 5.5 & 33\% & 74\% \\
+VERIFY & 1.2 & 3\% & 117\% & 3.4 & 20\% & 124\% \\
+OTHER & 2.4 & 5\% & 82\% & 0.7 & 4\% & 143\% \\
+
+\midrule
+\textbf{Total} & \textbf{46.0} & 100\% & -- & \textbf{17.0} & 100\% & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
