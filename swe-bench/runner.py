@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
+from collections import Counter
 import sys
 
 # Add mini-swe-agent to path
@@ -48,12 +49,16 @@ from minisweagent.environments.docker import DockerEnvironment
 from minisweagent.models.litellm_model import LitellmModel
 
 
-def get_swebench_docker_image(instance_id: str) -> str:
+# ============================================================================
+# SWE-bench Docker Helpers
+# ============================================================================
+
+def get_swebench_docker_image_name(instance_id: str) -> str:
     """Get the Docker image name for a SWE-bench instance.
     
-    Docker doesn't allow double underscore, so we replace them with a magic token.
-    Image pattern: docker.io/swebench/sweb.eval.x86_64.{id}:latest
+    Based on mini-swe-agent's implementation in run/extra/swebench.py
     """
+    # Docker doesn't allow double underscore, so replace with magic token
     id_docker_compatible = instance_id.replace("__", "_1776_")
     return f"docker.io/swebench/sweb.eval.x86_64.{id_docker_compatible}:latest".lower()
 
@@ -108,7 +113,7 @@ class TaskResult:
     runs: List[dict] = field(default_factory=list)
     # Consistency metrics (computed after runs)
     unique_sequences: int = 0
-    answer_consistency: float = 0.0
+    success_consistency: float = 0.0  # Renamed from answer_consistency
     avg_steps: float = 0.0
     step_variance: float = 0.0
 
@@ -223,8 +228,8 @@ class SWEBenchRunner:
         provider: str,
         results_dir: str = "results",
         temperature: float = 0.7,
-        max_steps: int = 50,
-        timeout: int = 60,
+        max_steps: int = 250,
+        timeout: int = 30,
         use_docker: bool = False,
     ):
         self.model_name = model_name
@@ -236,11 +241,14 @@ class SWEBenchRunner:
         self.timeout = timeout
         self.use_docker = use_docker
         
-        # Load agent config - use swebench config for Docker, default otherwise
+        # Load agent config - use SWE-bench config for Docker, default for local
         if use_docker:
+            # SWE-bench config has templates designed for Docker (no system info vars)
             config_path = MINI_SWE_PATH / "minisweagent" / "config" / "extra" / "swebench.yaml"
         else:
+            # Default config works with LocalEnvironment (has system info vars)
             config_path = MINI_SWE_PATH / "minisweagent" / "config" / "default.yaml"
+        
         self.agent_config = yaml.safe_load(config_path.read_text())["agent"]
         self.agent_config["step_limit"] = max_steps
     
@@ -255,60 +263,57 @@ class SWEBenchRunner:
         else:
             return self.model_name
     
-    def _create_agent(self, task_metadata: Optional[Dict] = None) -> tuple[TrackedAgent, Any]:
+    def _create_agent(self, task_data: Optional[Dict[str, str]] = None) -> tuple[TrackedAgent, Any]:
         """Create a new TrackedAgent instance.
         
         Args:
-            task_metadata: Optional dict with 'instance_id', 'repo', 'base_commit' for Docker setup
+            task_data: Optional dict with task_id, repo, base_commit for SWE-bench tasks
             
         Returns:
             Tuple of (agent, environment) - environment returned for cleanup
         """
         model = LitellmModel(
             model_name=self._get_litellm_model_name(),
-            model_kwargs={"temperature": self.temperature},
+            model_kwargs={
+                "temperature": self.temperature,
+                "timeout": 120,  # 2 min timeout per API call
+                "num_retries": 2,  # Retry on transient failures
+                "max_tokens": 4096,  # Limit response length to prevent hangs
+            },
         )
         
-        if self.use_docker and task_metadata:
-            # Use DockerEnvironment for SWE-bench tasks
-            instance_id = task_metadata.get("instance_id", task_metadata.get("task_id", ""))
-            image = get_swebench_docker_image(instance_id)
-            print(f"    Using Docker image: {image}")
-            
+        # Use DockerEnvironment for SWE-bench tasks, LocalEnvironment for simple tasks
+        if self.use_docker and task_data and task_data.get("task_id"):
+            instance_id = task_data["task_id"]
+            image_name = get_swebench_docker_image_name(instance_id)
+            print(f"    [Docker] Using image: {image_name}")
             env = DockerEnvironment(
-                image=image,
-                cwd="/testbed",  # SWE-bench standard working directory
+                image=image_name,
+                cwd="/testbed",  # SWE-bench repos are mounted at /testbed
                 timeout=self.timeout,
-                env={
-                    "PAGER": "cat",
-                    "MANPAGER": "cat",
-                    "LESS": "-R",
-                    "PIP_PROGRESS_BAR": "off",
-                    "TQDM_DISABLE": "1",
-                },
+                pull_timeout=300,  # Allow more time for image pull
             )
         else:
-            # Use LocalEnvironment for simple tasks
             env = LocalEnvironment(timeout=self.timeout)
         
         agent = TrackedAgent(model=model, env=env, **self.agent_config)
         return agent, env
     
-    def run_single(self, task: str, task_id: str, run_number: int, task_metadata: Optional[Dict] = None) -> SWERun:
+    def run_single(self, task: str, task_id: str, run_number: int, task_data: Optional[Dict[str, str]] = None) -> SWERun:
         """Run a single task once.
         
         Args:
-            task: Task description/problem statement
-            task_id: Unique task identifier
+            task: The task/problem statement
+            task_id: Unique identifier for the task
             run_number: Which run number this is (1-indexed)
-            task_metadata: Optional dict with 'instance_id', 'repo', 'base_commit' for Docker
+            task_data: Full task data dict (for SWE-bench with repo/commit info)
         """
         run_id = f"{task_id}_run_{run_number:02d}"
         start_time = datetime.now().isoformat()
         env = None
         
         try:
-            agent, env = self._create_agent(task_metadata)
+            agent, env = self._create_agent(task_data)
             exit_status, message = agent.run(task)
             end_time = datetime.now().isoformat()
             
@@ -355,31 +360,34 @@ class SWEBenchRunner:
                 end_time=datetime.now().isoformat(),
             )
         finally:
-            # Cleanup Docker container if used
-            if env is not None and hasattr(env, 'cleanup'):
-                env.cleanup()
+            # Cleanup Docker container if using Docker
+            if env and hasattr(env, 'cleanup'):
+                try:
+                    env.cleanup()
+                except Exception:
+                    pass  # Ignore cleanup errors
     
-    def run_task(self, task: str, task_id: str, n_runs: int = 10, task_metadata: Optional[Dict] = None) -> TaskResult:
+    def run_task(self, task: str, task_id: str, n_runs: int = 10, task_data: Optional[Dict[str, str]] = None) -> TaskResult:
         """Run the same task N times and compute consistency metrics.
         
         Args:
-            task: Task description/problem statement
-            task_id: Unique task identifier  
+            task: The task/problem statement
+            task_id: Unique identifier for the task
             n_runs: Number of times to run the task
-            task_metadata: Optional dict with SWE-bench instance info for Docker setup
+            task_data: Full task data dict (for SWE-bench with repo/commit info)
         """
         print(f"\n{'='*60}")
         print(f"Task: {task_id}")
         print(f"Description: {task[:100]}...")
-        if self.use_docker:
-            print(f"Environment: Docker")
+        if self.use_docker and task_data:
+            print(f"Repo: {task_data.get('repo', 'N/A')}")
         print(f"{'='*60}")
         
         runs: List[SWERun] = []
         
         for i in range(1, n_runs + 1):
             print(f"  Run {i}/{n_runs}...", end=" ", flush=True)
-            run = self.run_single(task, task_id, i, task_metadata)
+            run = self.run_single(task, task_id, i, task_data)
             runs.append(run)
             
             status = "✓" if run.success else "✗"
@@ -389,12 +397,10 @@ class SWEBenchRunner:
         action_sequences = [tuple(r.action_sequence) for r in runs]
         unique_sequences = len(set(action_sequences))
         
-        # Answer consistency (most common final output)
         # Success consistency (% runs with same success/failure outcome)
-        from collections import Counter
         success_states = [r.success for r in runs]
         most_common_count = Counter(success_states).most_common(1)[0][1]
-        answer_consistency = most_common_count / len(runs)
+        success_consistency = most_common_count / len(runs)
         
         # Step statistics
         step_counts = [r.n_steps for r in runs]
@@ -413,7 +419,7 @@ class SWEBenchRunner:
             n_runs=n_runs,
             runs=[asdict(r) for r in runs],
             unique_sequences=unique_sequences,
-            answer_consistency=answer_consistency,
+            success_consistency=success_consistency,
             avg_steps=avg_steps,
             step_variance=step_variance,
         )
@@ -421,7 +427,7 @@ class SWEBenchRunner:
         # Print summary
         print(f"\n  Summary:")
         print(f"    Unique sequences: {unique_sequences}/{n_runs}")
-        print(f"    Answer consistency: {answer_consistency:.1%}")
+        print(f"    Success consistency: {success_consistency:.1%}")
         print(f"    Avg steps: {avg_steps:.1f} (variance ratio: {step_variance:.2f})")
         
         return result
@@ -440,32 +446,60 @@ class SWEBenchRunner:
         print(f"{'#'*60}")
         print(f"  Model: {self.model_name} ({self.provider})")
         print(f"  Temperature: {self.temperature}")
+        print(f"  Environment: {'Docker' if self.use_docker else 'Local'}")
         print(f"  Tasks: {len(tasks)}")
         print(f"  Runs per task: {n_runs}")
         print(f"  Total runs: {len(tasks) * n_runs}")
-        print(f"  Environment: {'Docker' if self.use_docker else 'Local'}")
         print(f"  Results dir: {self.results_dir}")
         
         results = []
+        skipped = 0
         for task_data in tasks:
-            # Pass full task_data as metadata for Docker setup
+            task_id = task_data["task_id"]
+            result_path = self.results_dir / f"{task_id}.json"
+            
+            # Skip if already completed (resume support)
+            if result_path.exists():
+                print(f"\n[Skip] {task_id} - already completed (results exist)")
+                skipped += 1
+                # Load existing result for summary stats
+                with open(result_path) as f:
+                    existing = json.load(f)
+                    results.append(TaskResult(
+                        task_id=existing["task_id"],
+                        task=existing["task"],
+                        model=existing["model"],
+                        provider=existing["provider"],
+                        temperature=existing["temperature"],
+                        n_runs=existing["n_runs"],
+                        runs=[],  # Don't need to reload runs for summary
+                        unique_sequences=existing["unique_sequences"],
+                        success_consistency=existing["success_consistency"],
+                        avg_steps=existing["avg_steps"],
+                        step_variance=existing["step_variance"],
+                    ))
+                continue
+            
             result = self.run_task(
                 task=task_data["task"],
-                task_id=task_data["task_id"],
+                task_id=task_id,
                 n_runs=n_runs,
-                task_metadata=task_data if self.use_docker else None,
+                task_data=task_data,  # Pass full task data for Docker setup
             )
             self.save_result(result)
             results.append(result)
+        
+        if skipped > 0:
+            print(f"\n[Resume] Skipped {skipped} already-completed tasks")
         
         # Print final summary
         print(f"\n{'#'*60}")
         print(f"Experiment Complete!")
         print(f"{'#'*60}")
         avg_unique = sum(r.unique_sequences for r in results) / len(results)
-        avg_consistency = sum(r.answer_consistency for r in results) / len(results)
+        avg_consistency = sum(r.success_consistency for r in results) / len(results)
         print(f"  Avg unique sequences: {avg_unique:.1f}")
-        print(f"  Avg answer consistency: {avg_consistency:.1%}")
+        print(f"  Avg success consistency: {avg_consistency:.1%}")
         
         return results
 
@@ -475,15 +509,7 @@ class SWEBenchRunner:
 # ============================================================================
 
 def load_swebench_tasks(n_tasks: int = 10, split: str = "test") -> List[Dict[str, str]]:
-    """Load tasks from SWE-bench dataset.
-    
-    Returns list of dicts with:
-        - task_id: instance_id from SWE-bench
-        - instance_id: same as task_id (used for Docker image name)
-        - task: problem_statement  
-        - repo: repository name (e.g., 'django/django')
-        - base_commit: commit hash to checkout
-    """
+    """Load tasks from SWE-bench dataset."""
     try:
         from datasets import load_dataset
     except ImportError:
@@ -501,7 +527,6 @@ def load_swebench_tasks(n_tasks: int = 10, split: str = "test") -> List[Dict[str
             break
         tasks.append({
             "task_id": item["instance_id"],
-            "instance_id": item["instance_id"],  # Used for Docker image name
             "task": item["problem_statement"],
             "repo": item.get("repo", ""),
             "base_commit": item.get("base_commit", ""),
@@ -521,25 +546,18 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Simple test with custom task (local environment)
+  # Simple test with custom task
   python runner.py --model gpt-4o --provider openai \\
       --task "Create hello.py that prints Hello World" \\
       --task-id test_001 --n-runs 3
 
-  # Run on SWE-bench with Docker (required for real SWE-bench tasks)
+  # Run on SWE-bench dataset
   python runner.py --model gpt-4o --provider openai \\
-      --swebench --use-docker --n-tasks 10 --n-runs 10
+      --swebench --n-tasks 10 --n-runs 10
 
-  # With Claude on SWE-bench
-  python runner.py --model claude-sonnet-4-5-20250929 --provider anthropic \\
-      --swebench --use-docker --n-tasks 5 --n-runs 10
-
-  # With Llama via Together AI
-  python runner.py --model meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo --provider together \\
-      --swebench --use-docker --n-tasks 5 --n-runs 10
-
-Note: --use-docker requires Docker to be installed and the SWE-bench images
-      (docker.io/swebench/sweb.eval.x86_64.*) to be available.
+  # With Claude
+  python runner.py --model claude-sonnet-4-20250514 --provider anthropic \\
+      --swebench --n-tasks 5 --n-runs 10
         """
     )
     
@@ -558,11 +576,8 @@ Note: --use-docker requires Docker to be installed and the SWE-bench images
     
     # Run settings
     parser.add_argument("--n-runs", type=int, default=10, help="Runs per task")
-    parser.add_argument("--max-steps", type=int, default=50, help="Max steps per run")
+    parser.add_argument("--max-steps", type=int, default=250, help="Max steps per run")
     parser.add_argument("--results-dir", default="results", help="Output directory")
-    parser.add_argument("--use-docker", action="store_true", 
-                        help="Use Docker environment (required for real SWE-bench tasks)")
-    parser.add_argument("--timeout", type=int, default=60, help="Command timeout in seconds")
     
     args = parser.parse_args()
     
@@ -570,15 +585,14 @@ Note: --use-docker requires Docker to be installed and the SWE-bench images
     if args.task and not args.task_id:
         parser.error("--task-id is required when using --task")
     
-    # Create runner
+    # Create runner (use Docker for SWE-bench tasks)
     runner = SWEBenchRunner(
         model_name=args.model,
         provider=args.provider,
         results_dir=args.results_dir,
         temperature=args.temperature,
         max_steps=args.max_steps,
-        timeout=args.timeout,
-        use_docker=args.use_docker,
+        use_docker=args.swebench,  # Use Docker for SWE-bench, Local for simple tasks
     )
     
     # Get tasks

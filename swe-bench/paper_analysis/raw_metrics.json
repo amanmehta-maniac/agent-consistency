@@ -1,0 +1,750 @@
+{
+  "statistics": {
+    "claude": {
+      "steps": {
+        "mean": 46.08,
+        "median": 45.5,
+        "std": 8.080816285297836,
+        "min": 26,
+        "max": 64,
+        "n": 50
+      },
+      "cv": {
+        "mean": 15.19456916343015,
+        "median": 14.268942914738975,
+        "std": 5.3489376118487675,
+        "ci_95": [
+          11.368169703093358,
+          19.020968623766944
+        ]
+      },
+      "unique_sequences": {
+        "mean": 5.0,
+        "total_unique_rate": 1.0
+      }
+    },
+    "llama": {
+      "steps": {
+        "mean": 16.98,
+        "median": 14.5,
+        "std": 9.403625006629419,
+        "min": 7,
+        "max": 55,
+        "n": 50
+      },
+      "cv": {
+        "mean": 47.00128837780568,
+        "median": 45.667205826590475,
+        "std": 13.899492397320985,
+        "ci_95": [
+          37.05819050164969,
+          56.94438625396167
+        ]
+      },
+      "unique_sequences": {
+        "mean": 5.0,
+        "total_unique_rate": 1.0
+      }
+    },
+    "tests": {
+      "t_test": {
+        "t_statistic": -6.753536152470011,
+        "p_value": 2.5003212528211565e-06,
+        "significant_01": true,
+        "significant_05": true
+      },
+      "mann_whitney": {
+        "u_statistic": 0.0,
+        "p_value": 0.00018267179110955002,
+        "significant_01": true,
+        "significant_05": true
+      },
+      "effect_size": {
+        "cohens_d": -3.0202731850850664,
+        "interpretation": "large"
+      }
+    },
+    "comparisons": {
+      "cv_ratio": 3.09329523412398,
+      "steps_ratio": 2.713780918727915,
+      "llama_faster_by": 2.713780918727915,
+      "claude_more_consistent_by": 3.09329523412398
+    }
+  },
+  "first_action_analysis": {
+    "claude_distribution": {
+      "find": 34,
+      "cat/read": 2,
+      "ls": 13,
+      "grep": 1
+    },
+    "llama_distribution": {
+      "grep": 12,
+      "ls": 27,
+      "find": 10,
+      "cat/read": 1
+    },
+    "categories": [
+      "cat/read",
+      "find",
+      "grep",
+      "ls"
+    ],
+    "contingency_table": [
+      [
+        2,
+        34,
+        1,
+        13
+      ],
+      [
+        1,
+        10,
+        12,
+        27
+      ]
+    ],
+    "chi_square": {
+      "statistic": 27.631934731934734,
+      "p_value": 4.338987493927982e-06,
+      "dof": 3,
+      "significant": true
+    }
+  },
+  "divergence_analysis": {
+    "intra_task_similarity": {
+      "claude": {
+        "mean": 0.06938186542216351,
+        "std": 0.040799014611683816,
+        "per_task": [
+          0.045949464704798576,
+          0.06916783333558989,
+          0.017373011015911873,
+          0.09269561499617224,
+          0.04539985190670122,
+          0.08907348588507627,
+          0.03861163772597224,
+          0.10982531069293713,
+          0.15002556766503566,
+          0.035696876293439976
+        ]
+      },
+      "llama": {
+        "mean": 0.02967333401895293,
+        "std": 0.021421422731230017,
+        "per_task": [
+          0.07150746760092111,
+          0.02463354700854701,
+          0.004,
+          0.05208202936346952,
+          0.0058823529411764705,
+          0.030416666666666668,
+          0.024101814638899037,
+          0.009583333333333333,
+          0.03106988329946588,
+          0.043456245337050295
+        ]
+      }
+    },
+    "divergence_point": {
+      "claude": {
+        "mean": 0.3,
+        "median": 0.0,
+        "per_task": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          1,
+          1,
+          0
+        ]
+      },
+      "llama": {
+        "mean": 0.1,
+        "median": 0.0,
+        "per_task": [
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "correlation_analysis": {
+    "difficulty_vs_cv": {
+      "claude": {
+        "correlation": -0.503861271886808,
+        "p_value": 0.13757739478257322
+      },
+      "llama": {
+        "correlation": 0.24747011891192153,
+        "p_value": 0.490611198908093
+      }
+    },
+    "task_data": {
+      "astropy-12907": {
+        "claude_steps": 38.2,
+        "claude_cv": 20.728620832281834,
+        "llama_steps": 16.6,
+        "llama_cv": 66.62007855879158
+      },
+      "astropy-13033": {
+        "claude_steps": 42.6,
+        "claude_cv": 14.240141678970048,
+        "llama_steps": 22.4,
+        "llama_cv": 44.374191570675634
+      },
+      "astropy-13236": {
+        "claude_steps": 40.6,
+        "claude_cv": 27.015112479204458,
+        "llama_steps": 13.2,
+        "llama_cv": 38.77722391536281
+      },
+      "astropy-13398": {
+        "claude_steps": 47.8,
+        "claude_cv": 8.801541409189385,
+        "llama_steps": 15.4,
+        "llama_cv": 46.96022008250531
+      },
+      "astropy-13453": {
+        "claude_steps": 41.2,
+        "claude_cv": 14.297744150507905,
+        "llama_steps": 11.0,
+        "llama_cv": 28.747978728803453
+      },
+      "astropy-13579": {
+        "claude_steps": 52.8,
+        "claude_cv": 10.493859982723537,
+        "llama_steps": 14.4,
+        "llama_cv": 47.507309379130746
+      },
+      "astropy-13977": {
+        "claude_steps": 49.0,
+        "claude_cv": 14.645612341231962,
+        "llama_steps": 13.2,
+        "llama_cv": 37.65082921148235
+      },
+      "astropy-14096": {
+        "claude_steps": 47.0,
+        "claude_cv": 17.28518809497013,
+        "llama_steps": 22.2,
+        "llama_cv": 31.110444414111726
+      },
+      "astropy-14182": {
+        "claude_steps": 53.2,
+        "claude_cv": 12.425935248901059,
+        "llama_steps": 26.8,
+        "llama_cv": 61.05052339474339
+      },
+      "astropy-14309": {
+        "claude_steps": 48.4,
+        "claude_cv": 12.011935416321185,
+        "llama_steps": 14.6,
+        "llama_cv": 67.21408452244984
+      }
+    }
+  },
+  "claims": {
+    "claude_3x_more_consistent": {
+      "ratio": 3.09329523412398,
+      "verified": true,
+      "interpretation": "Claude is 3.1x more consistent (CV ratio)"
+    },
+    "llama_2_7x_faster": {
+      "ratio": 2.713780918727915,
+      "verified": true,
+      "interpretation": "Claude takes 2.7x more steps than Llama"
+    },
+    "100_percent_unique_sequences": {
+      "claude_rate": 1.0,
+      "llama_rate": 1.0,
+      "verified": true,
+      "interpretation": "Claude: 100% unique, Llama: 100% unique"
+    },
+    "large_effect_size": {
+      "cohens_d": -3.0202731850850664,
+      "verified": true,
+      "interpretation": "Cohen's d = -3.020 (large)"
+    },
+    "statistically_significant": {
+      "p_value": 2.5003212528211565e-06,
+      "verified": true,
+      "interpretation": "p = 0.0000 (significant at \u03b1=0.01)"
+    }
+  },
+  "claude_data": [
+    {
+      "task_id": "astropy-12907",
+      "full_task_id": "astropy__astropy-12907",
+      "steps": [
+        26,
+        35,
+        43,
+        46,
+        41
+      ],
+      "mean_steps": 38.2,
+      "std_steps": 7.918333157931661,
+      "cv": 20.728620832281834,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(separab|model)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(separab|model)\" | head -20",
+        "cat <<'EOF' > /testbed/debug_separable4.py\nfrom astropy.modeling import models as m\nfrom astropy.modeling.separable import _separable\nimport numpy as np\n\n# Non-nested version\nprint(\"Non-nested: Pix2Sky_TAN() & Linear1D(10) & Linear1D(5)\")\nmodel1 = m.Pix2Sky_TAN() & m.Linear1D(10) & m.Linear1D(5)\nprint(f\"Model structure:\")\nprint(f\"  Type: {type(model1)}\")\nprint(f\"  Op: {model1.op}\")\nprint(f\"  Left: {model1.left}\")\nprint(f\"  Left type: {type(model1.left)}\")\nprint(f\"  Left op: {model1.left.op if hasattr(model1.left, 'op') else 'N/A'}\")\nprint(f\"  Right: {model1.right}\")\nprint()\n\nsep1 = _separable(model1)\nprint(f\"Separability: {sep1}\")\nprint()\n\n# Nested version\nprint(\"Nested: Pix2Sky_TAN() & (Linear1D(10) & Linear1D(5))\")\ncm = m.Linear1D(10) & m.Linear1D(5)\nmodel2 = m.Pix2Sky_TAN() & cm\nprint(f\"Model structure:\")\nprint(f\"  Type: {type(model2)}\")\nprint(f\"  Op: {model2.op}\")\nprint(f\"  Left: {model2.left}\")\nprint(f\"  Right: {model2.right}\")\nprint(f\"  Right type: {type(model2.right)}\")\nprint(f\"  Right op: {model2.right.op if hasattr(model2.right, 'op') else 'N/A'}\")\nprint()\n\nsep2 = _separable(model2)\nprint(f\"Separability: {sep2}\")\nEOF",
+        "ls -la",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-13033",
+      "full_task_id": "astropy__astropy-13033",
+      "steps": [
+        35,
+        46,
+        38,
+        44,
+        50
+      ],
+      "mean_steps": 42.6,
+      "std_steps": 6.06630035524124,
+      "cv": 14.240141678970048,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "find /testbed -type f -name \"*.py\" | grep -i timeseries | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -i timeseries | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -i timeseries | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -i timeseries | head -20"
+      ]
+    },
+    {
+      "task_id": "astropy-13236",
+      "full_task_id": "astropy__astropy-13236",
+      "steps": [
+        31,
+        56,
+        29,
+        43,
+        44
+      ],
+      "mean_steps": 40.6,
+      "std_steps": 10.96813566655701,
+      "cv": 27.015112479204458,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "grep -n -B 5 -A 10 \"NdarrayMixin\" ./astropy/table/tests/test_mixin.py | head -100",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(table|column)\" | head -20",
+        "cat <<'EOF' > test_warning_filter.py\nimport numpy as np\nimport warnings\nfrom astropy.table import Table, Column\n\n# Test that the warning can be filtered\ndt = np.dtype([('x', 'f8'), ('y', 'f8')])\ndata = np.array([(1.0, 2.0), (3.0, 4.0)], dtype=dt)\n\nprint(\"Test: Warning can be filtered\")\nwith warnings.catch_warnings():\n    warnings.filterwarnings('ignore', category=FutureWarning)\n    t = Table()\n    t['structured'] = data\n    print(\"No warning displayed when filtered\")\n    print(f\"Column type: {type(t['structured'])}\")\n\nprint(\"\\nTest: Warning is raised when not filtered\")\nwith warnings.catch_warnings(record=True) as w:\n    warnings.simplefilter(\"always\")\n    t2 = Table()\n    t2['structured'] = data\n    if len(w) > 0:\n        print(f\"Warning category: {w[0].category.__name__}\")\n        print(f\"Message: {str(w[0].message)}\")\nEOF",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(table|column)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(table|mixin)\" | head -20"
+      ]
+    },
+    {
+      "task_id": "astropy-13398",
+      "full_task_id": "astropy__astropy-13398",
+      "steps": [
+        48,
+        46,
+        55,
+        45,
+        45
+      ],
+      "mean_steps": 47.8,
+      "std_steps": 4.207136793592526,
+      "cv": 8.801541409189385,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(itrs|altaz|hadec)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(altaz|hadec|itrs|transform)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(itrs|altaz|hadec|transform)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(itrs|altaz|hadec)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(itrs|altaz|hadec)\" | head -20"
+      ]
+    },
+    {
+      "task_id": "astropy-13453",
+      "full_task_id": "astropy__astropy-13453",
+      "steps": [
+        38,
+        42,
+        48,
+        45,
+        33
+      ],
+      "mean_steps": 41.2,
+      "std_steps": 5.890670590009257,
+      "cv": 14.297744150507905,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(html|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(html|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(html|ascii)\" | head -20",
+        "ls -la",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-13579",
+      "full_task_id": "astropy__astropy-13579",
+      "steps": [
+        52,
+        59,
+        44,
+        55,
+        54
+      ],
+      "mean_steps": 52.8,
+      "std_steps": 5.540758070878027,
+      "cv": 10.493859982723537,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(wcs|slice)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(wcs|slice)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(wcs|slice)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(wcs|slice)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(wcs|slice)\" | head -20"
+      ]
+    },
+    {
+      "task_id": "astropy-13977",
+      "full_task_id": "astropy__astropy-13977",
+      "steps": [
+        41,
+        53,
+        48,
+        59,
+        44
+      ],
+      "mean_steps": 49.0,
+      "std_steps": 7.176350047203662,
+      "cv": 14.645612341231962,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(quantity|core)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(quantity|core)\" | head -20",
+        "find /testbed -type f -name \"quantity.py\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(quantity|core)\" | head -20",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-14096",
+      "full_task_id": "astropy__astropy-14096",
+      "steps": [
+        40,
+        58,
+        53,
+        44,
+        40
+      ],
+      "mean_steps": 47.0,
+      "std_steps": 8.12403840463596,
+      "cv": 17.28518809497013,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-14182",
+      "full_task_id": "astropy__astropy-14182",
+      "steps": [
+        49,
+        64,
+        54,
+        52,
+        47
+      ],
+      "mean_steps": 53.2,
+      "std_steps": 6.6105975524153635,
+      "cv": 12.425935248901059,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(rst|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(rst|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(rst|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(rst|ascii)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(rst|ascii)\" | head -20"
+      ]
+    },
+    {
+      "task_id": "astropy-14309",
+      "full_task_id": "astropy__astropy-14309",
+      "steps": [
+        57,
+        51,
+        45,
+        47,
+        42
+      ],
+      "mean_steps": 48.4,
+      "std_steps": 5.813776741499453,
+      "cv": 12.011935416321185,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find /testbed -type f -name \"*.py\" | grep -E \"(registry|connect)\" | head -20",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(connect|registry)\" | head -20",
+        "ls -la",
+        "ls -la",
+        "find /testbed -type f -name \"*.py\" | grep -E \"(connect|registry)\" | head -20"
+      ]
+    }
+  ],
+  "llama_data": [
+    {
+      "task_id": "astropy-12907",
+      "full_task_id": "astropy__astropy-12907",
+      "steps": [
+        35,
+        13,
+        18,
+        7,
+        10
+      ],
+      "mean_steps": 16.6,
+      "std_steps": 11.058933040759403,
+      "cv": 66.62007855879158,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "grep -r \"def separability_matrix(\" .",
+        "ls -la",
+        "ls -la",
+        "find . -type f -name \"*.py\" | grep -E \"astropy|modeling|separable\"",
+        "ls -la | grep modeling"
+      ]
+    },
+    {
+      "task_id": "astropy-13033",
+      "full_task_id": "astropy__astropy-13033",
+      "steps": [
+        10,
+        36,
+        18,
+        28,
+        20
+      ],
+      "mean_steps": 22.4,
+      "std_steps": 9.939818911831342,
+      "cv": 44.374191570675634,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "find . -name \"*timeseries.py\"",
+        "find . -name \"*.py\" | grep -i timeseries",
+        "ls -la",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-13236",
+      "full_task_id": "astropy__astropy-13236",
+      "steps": [
+        7,
+        21,
+        11,
+        14,
+        13
+      ],
+      "mean_steps": 13.2,
+      "std_steps": 5.118593556827891,
+      "cv": 38.77722391536281,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "find . -type f -name \"*Table*\" -o -name \"*Column*\"",
+        "grep -r \"data.view(NdarrayMixin)\" .",
+        "grep -r \"data.view(NdarrayMixin)\" .",
+        "grep -r \"NdarrayMixin\" .",
+        "grep -r \"if (not isinstance(data, Column) and not data_is_mixin\" ."
+      ]
+    },
+    {
+      "task_id": "astropy-13398",
+      "full_task_id": "astropy__astropy-13398",
+      "steps": [
+        17,
+        13,
+        12,
+        8,
+        27
+      ],
+      "mean_steps": 15.4,
+      "std_steps": 7.231873892705818,
+      "cv": 46.96022008250531,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-13453",
+      "full_task_id": "astropy__astropy-13453",
+      "steps": [
+        12,
+        16,
+        10,
+        9,
+        8
+      ],
+      "mean_steps": 11.0,
+      "std_steps": 3.1622776601683795,
+      "cv": 28.747978728803453,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "grep -ri html .",
+        "find . -name \"*html*\"",
+        "grep -r \"write(\" astropy/io/ascii/",
+        "ls -la",
+        "grep -r \"write\" astropy/io/ascii/*"
+      ]
+    },
+    {
+      "task_id": "astropy-13579",
+      "full_task_id": "astropy__astropy-13579",
+      "steps": [
+        9,
+        13,
+        22,
+        21,
+        7
+      ],
+      "mean_steps": 14.4,
+      "std_steps": 6.841052550594828,
+      "cv": 47.507309379130746,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "grep -r \"SlicedLowLevelWCS\" .",
+        "ls -la",
+        "ls -la && grep -r \"SlicedLowLevelWCS\" . && grep -r \"world_to_pixel\" .",
+        "cat <<'EOF' > reproduce_issue.py\nimport numpy as np\nimport astropy.wcs\nfrom astropy.coordinates import SkyCoord\nimport astropy.units as u\n\nnx = 100\nny = 25\nnz = 2\nwcs_header = {\n    'WCSAXES': 3,\n    'CRPIX1': (nx + 1)/2,\n    'CRPIX2': (ny + 1)/2,\n    'CRPIX3': 1.0,\n    'PC1_1': 0.0,\n    'PC1_2': -1.0,\n    'PC1_3': 0.0,\n    'PC2_1': 1.0,\n    'PC2_2': 0.0,\n    'PC2_3': -1.0,\n    'CDELT1': 5,\n    'CDELT2': 5,\n    'CDELT3': 0.055,\n    'CUNIT1': 'arcsec',\n    'CUNIT2': 'arcsec',\n    'CUNIT3': 'Angstrom',\n    'CTYPE1': 'HPLN-TAN',\n    'CTYPE2': 'HPLT-TAN',\n    'CTYPE3': 'WAVE',\n    'CRVAL1': 0.0,\n    'CRVAL2': 0.0,\n    'CRVAL3': 1.05,\n\n}\nfits_wcs = astropy.wcs.WCS(header=wcs_header)\n\npt = SkyCoord(Tx=0*u.arcsec, Ty=0*u.arcsec, frame=astropy.wcs.utils.wcs_to_celestial_frame(fits_wcs))\nprint(fits_wcs.world_to_pixel(pt, 1.05*u.angstrom))\n\nll_sliced_wcs = astropy.wcs.wcsapi.SlicedLowLevelWCS(fits_wcs, 0)\nhl_sliced_wcs = astropy.wcs.wcsapi.HighLevelWCSWrapper(ll_sliced_wcs)\nprint(hl_sliced_wcs.world_to_pixel(pt))\nEOF",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-13977",
+      "full_task_id": "astropy__astropy-13977",
+      "steps": [
+        19,
+        10,
+        11,
+        18,
+        8
+      ],
+      "mean_steps": 13.2,
+      "std_steps": 4.969909455915671,
+      "cv": 37.65082921148235,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "ls -la",
+        "find . -name quantity.py",
+        "find . -name \"*.py\" -exec grep -l \"Quantity.__array_ufunc__\" {} \\;",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-14096",
+      "full_task_id": "astropy__astropy-14096",
+      "steps": [
+        30,
+        17,
+        15,
+        20,
+        29
+      ],
+      "mean_steps": 22.2,
+      "std_steps": 6.906518659932803,
+      "cv": 31.110444414111726,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "grep -r \"class SkyCoord\" .",
+        "grep -r \"class SkyCoord\" .",
+        "find . -type f -name \"sky_coordinate.py\"",
+        "find . -name \"sky_coordinate.py\"",
+        "ls -la"
+      ]
+    },
+    {
+      "task_id": "astropy-14182",
+      "full_task_id": "astropy__astropy-14182",
+      "steps": [
+        18,
+        21,
+        14,
+        55,
+        26
+      ],
+      "mean_steps": 26.8,
+      "std_steps": 16.361540269791227,
+      "cv": 61.05052339474339,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "grep -r \"RST\" .",
+        "ls -la",
+        "ls -la",
+        "ls -la | grep -E \"rst|table|astropy\""
+      ]
+    },
+    {
+      "task_id": "astropy-14309",
+      "full_task_id": "astropy__astropy-14309",
+      "steps": [
+        11,
+        31,
+        16,
+        8,
+        7
+      ],
+      "mean_steps": 14.6,
+      "std_steps": 9.813256340277675,
+      "cv": 67.21408452244984,
+      "unique_sequences": 5,
+      "n_runs": 5,
+      "first_actions": [
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "ls -la",
+        "find . -type f -name \"*.py\" -exec grep -l \"identify_format\" {} \\;"
+      ]
+    }
+  ]
+}

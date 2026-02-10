@@ -1,0 +1,38 @@
+
+\begin{table}[htbp]
+\centering
+\caption{Accuracy Results (SWE-bench Evaluation)}
+\label{tab:accuracy}
+\begin{tabular}{lccccc}
+\toprule
+Model & Run 1 & Run 2 & Run 3 & Run 4 & Run 5 & Total \\
+\midrule
+Claude 4.5 Sonnet & 5/10 & 6/10 & 7/10 & 5/10 & 6/10 & \textbf{29/50 (58\%)} \\
+Llama-3.1-70B & 0/10 & 0/10 & 0/10 & 1/10 & 1/10 & 2/50 (4\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-Task Accuracy Comparison}
+\label{tab:pertask_accuracy}
+\begin{tabular}{lcc}
+\toprule
+Task ID & Claude Accuracy & Llama Accuracy \\
+\midrule
+astropy-12907 & 100\% (5/5) & 0\% (0/5) \\
+astropy-13033 & 60\% (3/5) & 0\% (0/3) \\
+astropy-13236 & 0\% (0/5) & 25\% (1/4) \\
+astropy-13398 & 0\% (0/5) & 0\% (0/1) \\
+astropy-13453 & 100\% (5/5) & 0\% (0/5) \\
+astropy-13579 & 100\% (5/5) & 0\% (0/5) \\
+astropy-13977 & 0\% (0/5) & 0\% (0/4) \\
+astropy-14096 & 100\% (5/5) & 0\% (0/5) \\
+astropy-14182 & 20\% (1/5) & 0\% (0/5) \\
+astropy-14309 & 100\% (5/5) & 33\% (1/3) \\
+\midrule
+\textbf{Overall} & \textbf{58\%} & 4\% \\
+\bottomrule
+\end{tabular}
+\end{table}
