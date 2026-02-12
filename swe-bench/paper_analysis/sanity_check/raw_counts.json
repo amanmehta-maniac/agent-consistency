@@ -1,0 +1,72 @@
+{
+  "claude_files": 10,
+  "llama_files": 10,
+  "claude_runs_total": 50,
+  "llama_runs_total": 50,
+  "claude_success": 29,
+  "llama_success": 2,
+  "claude_mean_steps": 46.08,
+  "claude_std_steps": 7.9995999899995,
+  "llama_mean_steps": 16.98,
+  "llama_std_steps": 9.309113813892276,
+  "claude_mean_cv": 13.59043581530077,
+  "llama_mean_cv": 42.03923033713774,
+  "verification_status": "PASSED",
+  "minor_discrepancies": [
+    "cv_values",
+    "divergence_step",
+    "llama_failure_modes"
+  ],
+  "per_task_accuracy": {
+    "claude": {
+      "12907": "5/5",
+      "13033": "3/5",
+      "13236": "0/5",
+      "13398": "0/5",
+      "13453": "5/5",
+      "13579": "5/5",
+      "13977": "0/5",
+      "14096": "5/5",
+      "14182": "1/5",
+      "14309": "5/5"
+    },
+    "llama": {
+      "12907": "0/5",
+      "13033": "0/5",
+      "13236": "1/5",
+      "13398": "0/5",
+      "13453": "0/5",
+      "13579": "0/5",
+      "13977": "0/5",
+      "14096": "0/5",
+      "14182": "0/5",
+      "14309": "1/5"
+    }
+  },
+  "first_action_distribution": {
+    "claude": {
+      "find": 68,
+      "ls": 26,
+      "cat": 4,
+      "grep": 2
+    },
+    "llama": {
+      "ls": 54,
+      "grep": 24,
+      "find": 20,
+      "cat": 2
+    }
+  },
+  "failure_modes": {
+    "claude": {
+      "WRONG_FIX": 21,
+      "EMPTY_PATCH": 0,
+      "LOOP_DEATH": 0
+    },
+    "llama": {
+      "WRONG_FIX": 38,
+      "EMPTY_PATCH": 10,
+      "LOOP_DEATH": 0
+    }
+  }
+}

@@ -1,0 +1,24 @@
+CV VALUES:
+  Paper claimed: Claude mean CV = 15.2%, Llama mean CV = 47.0%
+  Actual: Claude mean CV = 13.6%, Llama mean CV = 42.0%
+  Difference: Claude -1.6%, Llama -5.0%
+  Status: MINOR - values are within reasonable range
+
+DIVERGENCE (astropy-13398):
+  Paper claimed: First 8 actions match
+  Actual: First 7 actions match, divergence at step 8
+  Status: MINOR - difference of 1 step
+
+LLAMA FAILURE MODES:
+  Paper claimed: 37 WRONG_FIX, 10 EMPTY_PATCH, 1 LOOP_DEATH
+  Actual: 38 WRONG_FIX, 10 EMPTY_PATCH, 0 LOOP_DEATH
+  Status: MINOR - difference of 1-2 runs
+
+MATCHES CONFIRMED:
+  ✓ 10 tasks × 5 runs = 50 per model (100 total)
+  ✓ Claude accuracy: 29/50 (58%)
+  ✓ Llama accuracy: 2/50 (4%)
+  ✓ Claude mean steps: 46.1
+  ✓ Llama mean steps: 17.0
+  ✓ First action distribution (exact match)
+  ✓ Claude failure modes: 21 WRONG_FIX, 0 EMPTY_PATCH, 0 LOOP_DEATH
