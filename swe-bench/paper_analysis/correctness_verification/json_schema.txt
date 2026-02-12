@@ -1,0 +1,51 @@
+## Agent Result File Schema (results_claude_10/*.json)
+
+Top-level keys:
+- task_id: str (e.g., "astropy__astropy-13236")
+- task: str (problem statement excerpt)
+- model: str (e.g., "claude-sonnet-4-5-20250929")
+- provider: str (e.g., "anthropic")
+- temperature: float (e.g., 0.5)
+- n_runs: int (5)
+- runs: List[RunData]
+- unique_sequences: int
+- success_consistency: float
+- avg_steps: float
+- step_variance: float
+
+RunData keys:
+- run_id: int (1-5)
+- task_id: str
+- task: str
+- model: str
+- provider: str
+- temperature: float
+- steps: List[StepData]
+- action_sequence: List[str]
+- final_output: str (the patch)
+- exit_status: str ("Submitted" | "LimitsExceeded" | None)
+- success: bool (TRUE = submitted, NOT TRUE = correct!)
+- error: Optional[str]
+- start_time: str (ISO timestamp)
+- end_time: str (ISO timestamp)
+- total_cost: float
+- n_calls: int
+- n_steps: int
+
+## SWE-bench Evaluation Report Schema (*.claude-local-run*.json)
+
+- total_instances: int (2294 = all SWE-bench tasks)
+- submitted_instances: int (10 = tasks we ran)
+- completed_instances: int (10 = patches applied successfully)
+- resolved_instances: int (number that PASS TESTS)
+- unresolved_instances: int (number that FAIL TESTS)
+- empty_patch_instances: int
+- error_instances: int
+- completed_ids: List[str]
+- incomplete_ids: List[str]
+- empty_patch_ids: List[str]
+- submitted_ids: List[str]
+- resolved_ids: List[str] (THESE ARE THE REAL SUCCESSES)
+- unresolved_ids: List[str]
+- error_ids: List[str]
+- schema_version: int (2)
