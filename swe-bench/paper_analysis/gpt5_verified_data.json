@@ -1,0 +1,66 @@
+{
+  "model": "openai-gpt-5",
+  "provider": "snowflake",
+  "n_tasks": 10,
+  "n_runs": 50,
+  "step_stats": {
+    "mean": 9.92,
+    "median": 8.0,
+    "std": 5.306291991011949,
+    "min": 4,
+    "max": 29
+  },
+  "cv_stats": {
+    "mean": 32.19122160292608,
+    "median": 32.91074163087883,
+    "std": 20.034230220904988,
+    "per_task": {
+      "astropy-12907": 30.8287726505694,
+      "astropy-13033": 66.73948449134241,
+      "astropy-13236": 34.99271061118826,
+      "astropy-13398": 20.737860308104178,
+      "astropy-13453": 39.17978925664843,
+      "astropy-13579": 13.573516965465926,
+      "astropy-13977": 0.0,
+      "astropy-14096": 55.624100375648446,
+      "astropy-14182": 18.10889557000736,
+      "astropy-14309": 42.12708580028639
+    }
+  },
+  "exit_statuses": {
+    "Submitted": 50
+  },
+  "success_count": 50,
+  "failure_modes": {
+    "WRONG_FIX": 48,
+    "EMPTY_PATCH": 2,
+    "LOOP_DEATH": 0
+  },
+  "first_actions": {
+    "ls": 50
+  },
+  "divergence": {
+    "mean": 3.4,
+    "median": 3.5,
+    "per_task": {
+      "astropy-12907": 5,
+      "astropy-13033": 3,
+      "astropy-13236": 4,
+      "astropy-13398": 2,
+      "astropy-13453": 3,
+      "astropy-13579": 4,
+      "astropy-13977": 4,
+      "astropy-14096": 4,
+      "astropy-14182": 3,
+      "astropy-14309": 2
+    }
+  },
+  "phase_decomposition": {
+    "EXPLORE": 61,
+    "UNDERSTAND": 147,
+    "OTHER": 53,
+    "EDIT": 56,
+    "VERIFY": 151
+  },
+  "total_actions": 468
+}
