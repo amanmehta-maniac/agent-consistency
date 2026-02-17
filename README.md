@@ -98,3 +98,20 @@ See `hotpotqa/figures/` for visualizations comparing consistency across models.
 ## License
 
 Research code - see individual papers for licensing.
+
+
+## Papers
+
+**Paper 1: HotpotQA** — [When Agents Disagree With Themselves: Measuring Behavioral Consistency in LLM-Based Agents](https://arxiv.org/abs/2602.11619) (arXiv, Feb 2026)
+
+**Paper 2: SWE-bench** — Coming soon
+
+### Citation
+```bibtex
+@article{mehta2026agents,
+  title={When Agents Disagree With Themselves: Measuring Behavioral Consistency in LLM-Based Agents},
+  author={Mehta, Aman},
+  journal={arXiv preprint arXiv:2602.11619},
+  year={2026}
+}
+```
