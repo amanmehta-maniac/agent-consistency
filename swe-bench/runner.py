@@ -47,6 +47,7 @@ from minisweagent.agents.default import (
 from minisweagent.environments.local import LocalEnvironment
 from minisweagent.environments.docker import DockerEnvironment
 from minisweagent.models.litellm_model import LitellmModel
+from minisweagent.models.snowflake_cortex_model import SnowflakeCortexModel
 
 
 # ============================================================================
@@ -260,6 +261,8 @@ class SWEBenchRunner:
             return f"anthropic/{self.model_name}"  # anthropic/claude-3-5-sonnet-20241022
         elif self.provider == "together":
             return f"together_ai/{self.model_name}"  # together_ai/meta-llama/...
+        elif self.provider == "snowflake":
+            return self.model_name  # Handled by SnowflakeCortexModel directly
         else:
             return self.model_name
     
@@ -272,15 +275,26 @@ class SWEBenchRunner:
         Returns:
             Tuple of (agent, environment) - environment returned for cleanup
         """
-        model = LitellmModel(
-            model_name=self._get_litellm_model_name(),
-            model_kwargs={
-                "temperature": self.temperature,
-                "timeout": 120,  # 2 min timeout per API call
-                "num_retries": 2,  # Retry on transient failures
-                "max_tokens": 4096,  # Limit response length to prevent hangs
-            },
-        )
+        # Select model based on provider
+        if self.provider == "snowflake":
+            model = SnowflakeCortexModel(
+                model_name=self.model_name,
+                model_kwargs={
+                    "temperature": self.temperature,
+                    "max_tokens": 4096,
+                },
+                cost_tracking="ignore_errors",  # Snowflake doesn't return exact costs
+            )
+        else:
+            model = LitellmModel(
+                model_name=self._get_litellm_model_name(),
+                model_kwargs={
+                    "temperature": self.temperature,
+                    "timeout": 120,  # 2 min timeout per API call
+                    "num_retries": 2,  # Retry on transient failures
+                    "max_tokens": 4096,  # Limit response length to prevent hangs
+                },
+            )
         
         # Use DockerEnvironment for SWE-bench tasks, LocalEnvironment for simple tasks
         if self.use_docker and task_data and task_data.get("task_id"):
@@ -558,12 +572,16 @@ Examples:
   # With Claude
   python runner.py --model claude-sonnet-4-20250514 --provider anthropic \\
       --swebench --n-tasks 5 --n-runs 10
+
+  # With Snowflake Cortex
+  python runner.py --model claude-3-5-sonnet --provider snowflake \\
+      --swebench --n-tasks 5 --n-runs 10
         """
     )
     
     # Model settings
     parser.add_argument("--model", required=True, help="Model name")
-    parser.add_argument("--provider", required=True, choices=["openai", "anthropic", "together"])
+    parser.add_argument("--provider", required=True, choices=["openai", "anthropic", "together", "snowflake"])
     parser.add_argument("--temperature", type=float, default=0.7)
     
     # Task settings (either --task or --swebench)

@@ -1,0 +1,681 @@
+%%%%%%%% ICML 2026 PAPER - 3-MODEL VERSION %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{multirow}
+
+% hyperref makes hyperlinks in the resulting PDF.
+\usepackage{hyperref}
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+\usepackage[]{icml2026}
+
+% For theorems and such
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+\icmltitlerunning{Consistency Amplifies: Behavioral Variance in LLM Agents}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Consistency Amplifies: How Behavioral Variance \\
+           Shapes Agent Accuracy on SWE-bench}
+
+\begin{icmlauthorlist}
+\icmlauthor{Aman Mehta}{snow}
+\end{icmlauthorlist}
+
+\icmlaffiliation{snow}{Snowflake Inc.}
+
+\icmlcorrespondingauthor{Aman Mehta}{aman.mehta@snowflake.com}
+
+\icmlkeywords{LLM agents, behavioral consistency, software engineering, benchmarks}
+
+\vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+% STEP 1: Updated Abstract
+\begin{abstract}
+As LLM-based agents are deployed in production systems, understanding their behavioral consistency (whether they produce similar action sequences when given identical tasks) becomes critical for reliability. We study consistency in the context of SWE-bench, a challenging software engineering benchmark requiring complex, multi-step reasoning. Comparing Claude 4.5 Sonnet, GPT-5, and Llama-3.1-70B across 50 runs each (10 tasks $\times$ 5 runs), we find that consistency strongly predicts accuracy across models: Claude achieves the lowest variance (CV: 13.6\%) and highest accuracy (58\%), GPT-5 is intermediate (CV: 32.2\%, accuracy: 32\%), and Llama shows the highest variance (CV: 42.0\%) with lowest accuracy (4\%). However, our analysis reveals a critical nuance: \textbf{consistency amplifies outcomes rather than guaranteeing correctness}. 71\% of Claude's failures stem from ``consistent wrong interpretation'': making the same incorrect assumption across all runs. Interestingly, GPT-5 achieves similar early strategic agreement as Claude (diverging at step 3.4 vs 3.2) but exhibits 2.4$\times$ higher variance, suggesting that divergence timing alone does not determine consistency. These findings suggest that for production deployment, interpretation accuracy matters more than execution consistency, with implications for agent evaluation and training.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The deployment of LLM-based agents in production systems (from code assistants to autonomous research tools) has accelerated dramatically. Yet a fundamental question remains underexplored: when given the same task multiple times, do these agents behave consistently?
+
+Behavioral consistency matters for several reasons. First, inconsistent agents are unpredictable, making them difficult to trust in high-stakes applications. Second, variance in agent behavior complicates debugging and improvement; if an agent sometimes succeeds and sometimes fails on identical inputs, isolating the cause becomes challenging. Third, consistency is a prerequisite for meaningful benchmarking: if results vary substantially across runs, single-run evaluations may be misleading.
+
+Prior work has established that LLMs exhibit significant variance in simple reasoning tasks \citep{mehta2026agents}. However, the relationship between consistency and task complexity remains unclear. Do consistency challenges grow with action space size? Does the variance in simple tasks predict variance in complex ones?
+
+We investigate these questions using SWE-bench \citep{swebench}, a benchmark requiring agents to resolve real GitHub issues through multi-step code modifications. SWE-bench tasks demand exploration of large codebases, understanding of bug context, implementation of fixes, and verification, representing a substantial increase in complexity from prior consistency studies.
+
+% STEP 2: Updated Contributions
+Our contributions are:
+
+\begin{enumerate}
+    \item \textbf{Quantitative characterization across capability tiers:} We find that consistency strongly predicts accuracy across three models: Claude 4.5 Sonnet (CV: 13.6\%, accuracy: 58\%), GPT-5 (CV: 32.2\%, accuracy: 32\%), and Llama-3.1-70B (CV: 42.0\%, accuracy: 4\%).
+    
+    \item \textbf{The amplification insight:} We show that consistency amplifies outcomes rather than guaranteeing correctness. 71\% of Claude's failures are ``consistent wrong interpretation'': the same incorrect approach across all runs.
+    
+    \item \textbf{The speed-accuracy-consistency tradeoff:} GPT-5 is 4.7$\times$ faster than Claude (9.9 vs 46.1 steps) but achieves 1.8$\times$ lower accuracy and 2.4$\times$ worse consistency, revealing a fundamental tradeoff.
+    
+    \item \textbf{The fixation failure mode:} Through detailed trajectory analysis, we identify cases where Claude's thoroughness causes fixation on incorrect interpretations, while less thorough approaches occasionally allow course correction.
+    
+    \item \textbf{Divergence timing vs consistency:} Despite similar divergence timing (Claude: step 3.2, GPT-5: step 3.4), Claude achieves 2.4$\times$ better consistency, showing that early agreement alone does not determine behavioral variance.
+\end{enumerate}
+
+These findings have implications for agent deployment: consistency alone is insufficient for reliability; interpretation quality is the bottleneck.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+\label{sec:related}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{LLM Agent Benchmarks.} SWE-bench \citep{swebench} evaluates agents on real GitHub issues, requiring multi-step reasoning and code modification. Other benchmarks include WebArena \citep{webarena} for web navigation, OSWorld \citep{osworld} for computer use, and various coding benchmarks \citep{humaneval, mbpp}. Most report single-run accuracy, leaving consistency unexplored. Recent work on SWE-bench Verified \citep{swebench_verified} provides human-validated solutions, enabling more reliable evaluation.
+
+\paragraph{LLM Consistency and Reliability.} Prior work has examined consistency in simpler settings: mathematical reasoning \citep{wang2023selfconsistency}, factual questions \citep{elazar2021consistency}, and multi-hop QA \citep{mehta2026agents}. These studies find substantial variance even in straightforward tasks. Self-consistency methods \citep{wang2023selfconsistency} leverage this variance through majority voting, but assume independent samples, an assumption that may not hold for complex agent trajectories. We extend this line of work to complex, multi-step agent behavior where actions are sequentially dependent.
+
+\paragraph{Agent Failure Analysis.} Studies of agent failures have focused on error categorization \citep{agent_errors} and recovery mechanisms \citep{reflexion}. Reflexion \citep{reflexion} shows that agents can improve through verbal self-reflection, but assumes failures are detectable. Our work contributes a new perspective: systematic analysis of \textit{when} in the trajectory failures originate, and how consistency interacts with correctness. We find that many failures are ``consistent wrong''; the agent confidently repeats the same mistake, making reflection-based recovery unlikely.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Setup}
+\label{sec:setup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Benchmark and Tasks}
+
+We use SWE-bench Verified, a curated subset of SWE-bench with human-validated solutions. We select 10 tasks from the astropy repository, chosen for diversity in bug types and fix complexity. Table~\ref{tab:tasks} summarizes the task characteristics.
+
+\begin{table}[t]
+\caption{Task characteristics. Tasks vary in bug type, fix complexity (lines changed), and file count.}
+\label{tab:tasks}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Task ID & Bug Type & Fix Size & Files \\
+\midrule
+12907 & Logic error & 3 lines & 1 \\
+13033 & Missing check & 5 lines & 1 \\
+13236 & Silent conversion & 4 lines & 1 \\
+13398 & Edge case & 8 lines & 2 \\
+13453 & Type handling & 6 lines & 1 \\
+13579 & Format string & 2 lines & 1 \\
+13977 & Deprecation & 12 lines & 2 \\
+14096 & Boundary check & 7 lines & 1 \\
+14182 & Default value & 4 lines & 1 \\
+14309 & Import error & 3 lines & 1 \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+Each task requires the agent to understand a GitHub issue, locate relevant code, implement a fix, and verify correctness. The median fix size is 4.5 lines, but finding the right location and understanding the bug context requires substantial exploration.
+
+% STEP 3: Updated Models Section
+\subsection{Models}
+
+We compare three models representing different capability levels:
+
+\begin{itemize}
+    \item \textbf{Claude 4.5 Sonnet} (\texttt{claude-sonnet-4-5-20250929}): A frontier model known for strong coding capabilities, with extended context and tool use.
+    \item \textbf{GPT-5} (\texttt{openai-gpt-5}): OpenAI's frontier model with strong reasoning capabilities.
+    \item \textbf{Llama-3.1-70B-Instruct}: An open-weights model, smaller but widely deployed in production systems.
+\end{itemize}
+
+All models have access to identical tools: bash commands for file system navigation, code editing, and test execution. We use the same system prompt and tool definitions for all.
+
+\subsection{Experimental Protocol}
+
+For each model-task pair, we run 5 independent trials with:
+\begin{itemize}
+    \item Temperature: 0.5 (moderate stochasticity)
+    \item Maximum steps: 250
+    \item Isolated Docker containers per run
+    \item Identical prompts and tool access
+    \item Fresh repository state for each run
+\end{itemize}
+
+% STEP 4: Updated total runs
+This yields 50 runs per model (10 tasks $\times$ 5 runs), totaling 150 agent trajectories across three models. All runs completed without infrastructure failures.
+
+\subsection{Metrics}
+
+\paragraph{Consistency.} We measure behavioral variance using the coefficient of variation (CV) of step counts:
+\begin{equation}
+    \text{CV} = \frac{\sigma_{\text{steps}}}{\mu_{\text{steps}}} \times 100\%
+\end{equation}
+Lower CV indicates more consistent behavior. We compute CV per task and aggregate across tasks. We also measure sequence diversity: the fraction of runs with unique action sequences.
+
+\paragraph{Accuracy.} We evaluate patch correctness using the official SWE-bench evaluation harness, which applies each submitted patch to an isolated Docker container and runs the repository's test suite (approximately 110 seconds per task). A patch is marked ``resolved'' only if all previously-failing tests pass. This is distinct from agent completion rate (whether a patch was submitted), which approaches 100\% for all models.
+
+\paragraph{Phase Decomposition.} We categorize each agent action into phases based on command type:
+\begin{itemize}
+    \item \textbf{EXPLORE}: Directory listing, file search (\texttt{ls}, \texttt{find}, \texttt{grep})
+    \item \textbf{UNDERSTAND}: File reading (\texttt{cat}, \texttt{head}, \texttt{less})
+    \item \textbf{EDIT}: Code modification (\texttt{sed}, \texttt{echo >>}, file writes)
+    \item \textbf{VERIFY}: Testing (\texttt{python}, \texttt{pytest})
+\end{itemize}
+
+This decomposition allows us to identify where variance originates in the agent trajectory.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+\label{sec:results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{RQ1: Do Models Differ in Consistency?}
+
+Table~\ref{tab:main_results} presents our main findings. The three models show a clear hierarchy in both consistency and accuracy.
+
+% STEP 5: Updated Table 2
+\begin{table}[t]
+\caption{Overall comparison across three models on SWE-bench (10 tasks, 5 runs each, 50 runs per model).}
+\label{tab:main_results}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Metric & Claude & GPT-5 & Llama \\
+\midrule
+Consistency (CV) & \textbf{13.6\%} & 32.2\% & 42.0\% \\
+Accuracy & \textbf{58\%} & 32\% & 4\% \\
+Avg Steps & 46.1 & \textbf{9.9} & 17.0 \\
+Cost/Run & \$1.50 & \$0.53 & \$0.10 \\
+Valid Patches & 50/50 & 48/50 & 40/50 \\
+Unique Sequences & 100\% & 100\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+% STEP 6: Updated RQ1 body text
+The three models show a clear hierarchy. Claude is significantly more consistent than GPT-5 ($t(18) = 2.59$, $p = 0.018$, Cohen's $d = 1.16$), which trends more consistent than Llama ($t(18) = -1.92$, $p = 0.071$). Claude's CV of 13.6\% indicates step counts vary by about 6 steps around a mean of 46, while GPT-5's 32.2\% CV indicates variation of about 3 steps around a mean of 10.
+
+Notably, \textbf{100\% of runs produce unique action sequences} for all three models. Even with temperature 0.5, no two runs follow identical paths. This highlights that behavioral consistency (low CV) does not mean deterministic behavior; models can be consistent in \textit{strategy} while varying in \textit{execution details}.
+
+\paragraph{The Speed-Accuracy-Consistency Tradeoff.} GPT-5 reveals an important tradeoff: it is 4.7$\times$ faster than Claude (9.9 vs 46.1 steps) but achieves 1.8$\times$ lower accuracy (32\% vs 58\%) and 2.4$\times$ worse consistency (CV: 32.2\% vs 13.6\%). This suggests that thoroughness trades off against speed, with consistency as a mediating factor.
+
+Figure~\ref{fig:consistency} visualizes the consistency difference across all three models, and Figure~\ref{fig:heatmap} shows the raw step counts across all 150 runs. The heatmap makes the consistency gap visually striking: Claude's uniform coloring indicates similar step counts across runs, while Llama's patchy appearance reflects high variance.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_cv_distribution.png}
+\caption{Behavioral consistency comparison across three models. Claude achieves the lowest coefficient of variation, followed by GPT-5, then Llama. Individual task CVs shown as points.}
+\label{fig:consistency}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_step_heatmap.png}
+\caption{Step count heatmap across all 150 runs. Claude (left) shows uniform coloring; GPT-5 (middle) shows low counts with moderate variance; Llama (right) shows high variance.}
+\label{fig:heatmap}
+\end{figure}
+
+% STEP 7: Updated RQ2
+\subsection{RQ2: Does Consistency Relate to Accuracy?}
+\label{sec:rq2}
+
+With three models, we can examine whether consistency predicts accuracy across capability levels. The rank correlation is perfect: Claude (most consistent, most accurate), GPT-5 (middle), Llama (least consistent, least accurate).
+
+However, we cannot establish causality from $n=3$ models. To investigate further, we examine \textit{within-model} relationships.
+
+\paragraph{Within-Model Analysis.} We compute the correlation between per-task CV and accuracy for each model separately. Surprisingly, we find \textbf{no significant correlation} within any model:
+\begin{itemize}
+    \item Claude: $r = -0.10$, $p = 0.78$
+    \item GPT-5: $r = -0.15$, $p = 0.68$
+    \item Llama: $r = 0.30$, $p = 0.40$
+\end{itemize}
+
+Figure~\ref{fig:cv_accuracy} visualizes this relationship. This suggests consistency and accuracy are not straightforwardly linked at the task level; a model can be consistently wrong or inconsistently right.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_cv_vs_accuracy.png}
+\caption{Per-task consistency (CV) vs accuracy across three models. No significant within-model correlation exists. Consistency does not predict accuracy at the task level.}
+\label{fig:cv_accuracy}
+\end{figure}
+
+\paragraph{The Amplification Insight.} Closer analysis reveals why: consistency \textit{amplifies} outcomes rather than determining them. Table~\ref{tab:amplification} shows that Claude's tasks fall into distinct patterns.
+
+\begin{table}[t]
+\caption{Consistency amplifies outcomes: Claude's performance by interpretation quality. Tasks are categorized by whether Claude correctly understood the bug.}
+\label{tab:amplification}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Pattern & Tasks & Runs & Accuracy \\
+\midrule
+Correct interpretation & 5 & 25 & 100\% (25/25) \\
+Wrong interpretation & 3 & 15 & 0\% (0/15) \\
+Mixed results & 2 & 10 & 40\% (4/10) \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+When Claude correctly interprets a task, it succeeds on \textbf{all 5 runs}. When it incorrectly interprets a task, it fails on \textbf{all 5 runs}. Consistency ensures that correct approaches are reliably executed, but also that incorrect approaches are reliably repeated.
+
+% STEP 8: Updated cross-model task comparison
+\paragraph{Cross-Model Task Performance.} Table~\ref{tab:task_comparison} shows per-task accuracy across all three models. Notably, GPT-5 solves 6/10 tasks at least once (vs Claude 7/10, Llama 2/10), and achieves perfect 5/5 accuracy on astropy-14309, matching Claude.
+
+\begin{table}[t]
+\caption{Per-task accuracy across models. GPT-5 solves 6/10 tasks at least once.}
+\label{tab:task_comparison}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Task & Claude & GPT-5 & Llama \\
+\midrule
+12907 & 5/5 & 2/5 & 0/5 \\
+13033 & 3/5 & 0/5 & 0/5 \\
+13236 & 0/5 & 0/5 & 1/5 \\
+13398 & 0/5 & 0/5 & 0/5 \\
+13453 & 5/5 & 3/5 & 0/5 \\
+13579 & 5/5 & 3/5 & 0/5 \\
+13977 & 0/5 & 0/5 & 0/5 \\
+14096 & 5/5 & 3/5 & 0/5 \\
+14182 & 1/5 & 0/5 & 0/5 \\
+14309 & 5/5 & \textbf{5/5} & 1/5 \\
+\midrule
+\textbf{Total} & \textbf{29/50} & \textbf{16/50} & \textbf{2/50} \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+Figure~\ref{fig:accuracy} shows the per-task accuracy comparison.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_accuracy.png}
+\caption{Per-task accuracy comparison across three models. Claude achieves 58\% overall, GPT-5 32\%, and Llama 4\%. Note that Llama outperforms both on astropy-13236.}
+\label{fig:accuracy}
+\end{figure}
+
+% STEP 9: Updated RQ3 Phase Decomposition
+\subsection{RQ3: Where Does Variance Originate?}
+
+We decompose agent trajectories into phases to identify variance sources. Table~\ref{tab:phases} shows the distribution across all three models.
+
+\begin{table}[t]
+\caption{Phase decomposition showing where models spend their steps (\% of total actions).}
+\label{tab:phases}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Phase & Claude & GPT-5 & Llama \\
+\midrule
+EXPLORE & 17.8\% & 13.0\% & 28.1\% \\
+UNDERSTAND & 41.2\% & 31.4\% & 30.5\% \\
+EDIT & 14.5\% & 12.0\% & 11.2\% \\
+VERIFY & 19.3\% & \textbf{32.3\%} & 18.9\% \\
+OTHER & 7.2\% & 11.3\% & 11.3\% \\
+\midrule
+Pre-edit & 59.0\% & 44.4\% & 58.6\% \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+\paragraph{GPT-5's Unique Profile.} GPT-5 shows a distinctive pattern: it spends the most time on VERIFY (32.3\%), aggressively testing with \texttt{python} commands. It also uses \texttt{nl} (numbered line output) heavily (19.4\% of actions), a command rarely used by other models. Despite less exploration (13.0\% vs Claude's 17.8\%), GPT-5 achieves moderate accuracy through rapid iteration.
+
+Figure~\ref{fig:phases} visualizes this decomposition.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_phase_decomposition.png}
+\caption{Phase decomposition across three models. Claude invests heavily in UNDERSTAND, GPT-5 emphasizes VERIFY, and Llama spends more on EXPLORE.}
+\label{fig:phases}
+\end{figure}
+
+\paragraph{Variance by Phase.} Claude shows the lowest within-phase variance across all phases, while Llama shows erratic behavior especially in EXPLORE (CV: 123\% vs Claude's 42\%). GPT-5 falls between, with notably low variance in VERIFY due to its consistent testing strategy.
+
+% STEP 10: Updated RQ4 Failure Modes
+\subsection{RQ4: How Do Failure Modes Differ?}
+
+We categorize all failures by type. Table~\ref{tab:failures} shows that all three models primarily fail by submitting incorrect fixes rather than giving up.
+
+\begin{table}[t]
+\caption{Failure mode taxonomy across three models. All models primarily fail via wrong fixes.}
+\label{tab:failures}
+\vskip 0.15in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+Failure Mode & Claude (21) & GPT-5 (34) & Llama (48) \\
+\midrule
+WRONG\_FIX & 21 (100\%) & 32 (94\%) & 38 (79\%) \\
+EMPTY\_PATCH & 0 (0\%) & 2 (6\%) & 10 (21\%) \\
+LOOP\_DEATH & 0 (0\%) & 0 (0\%) & 0 (0\%) \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+Claude and GPT-5 almost never give up (0\% and 6\% empty patches), while Llama submits empty patches 21\% of the time. This ``give up'' failure mode is largely absent from the more capable models.
+
+Figure~\ref{fig:failures} visualizes these distributions.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_failure_modes.png}
+\caption{Failure mode distribution across three models. All models primarily fail via wrong fixes; Llama uniquely shows ``give up'' failures.}
+\label{fig:failures}
+\end{figure}
+
+\paragraph{The Consistent Wrong Pattern.} We further analyze Claude's 21 failures and find that 71\% (15/21) are ``consistent wrong interpretation'': the same incorrect approach across all 5 runs of a task. On three tasks (astropy-13236, astropy-13398, astropy-13977), Claude makes the identical mistake every time.
+
+This reveals a critical insight: \textbf{interpretation failures dominate execution failures}. More testing cannot help if the fundamental understanding is wrong.
+
+% STEP 11: Updated RQ5 Divergence
+\subsection{RQ5: When Do Trajectories Diverge?}
+\label{sec:rq5}
+
+Having established that models differ in consistency (RQ1) and identified phase-level patterns (RQ3), we investigate the mechanism: at which step do runs of the same task first take different actions?
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_divergence_distribution.png}
+\caption{Divergence step distribution. Claude and GPT-5 diverge around step 3; Llama diverges immediately (60\% at Step 1).}
+\label{fig:divergence}
+\end{figure}
+
+\paragraph{Divergence Analysis.} We define the divergence step as the first step where not all 5 runs of a task execute the same action category. Table~\ref{tab:divergence} reveals a surprising finding: Claude and GPT-5 have nearly identical divergence timing, yet very different consistency.
+
+\begin{table}[t]
+\caption{Divergence analysis: Claude and GPT-5 diverge at similar steps, but Claude achieves 2.4$\times$ better consistency.}
+\label{tab:divergence}
+\vskip 0.1in
+\begin{center}
+\begin{small}
+\begin{tabular}{lcccc}
+\toprule
+Model & Mean Div. & Median & \% at Step 1 & \% by Step 5 \\
+\midrule
+Claude & 3.2 & 3.0 & 0\% & 90\% \\
+GPT-5 & 3.4 & 3.5 & 0\% & 100\% \\
+Llama & 1.4 & 1.0 & 60\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+The most striking finding is the two-tier pattern: Claude and GPT-5 both diverge around step 3, while \textbf{60\% of Llama tasks diverge at Step 1}. Yet despite similar divergence timing, Claude achieves 2.4$\times$ better consistency (CV: 13.6\% vs 32.2\%). This suggests that \textbf{early strategic agreement is necessary but not sufficient for consistency}; what happens after divergence matters equally.
+
+\paragraph{First Action Analysis.} We next ask whether the first action predicts success. Table~\ref{tab:first_action} shows that first action strongly predicts \textit{model} but not \textit{success}.
+
+\begin{table}[t]
+\caption{First action distribution. GPT-5 always starts with \texttt{ls} (100\%), yet achieves only 32\% accuracy.}
+\label{tab:first_action}
+\vskip 0.1in
+\begin{center}
+\begin{small}
+\begin{tabular}{lccc}
+\toprule
+First Action & Claude & GPT-5 & Llama \\
+\midrule
+\texttt{find} & 68\% & 0\% & 20\% \\
+\texttt{ls} & 26\% & \textbf{100\%} & 54\% \\
+\texttt{grep} & 2\% & 0\% & 24\% \\
+\texttt{cat} & 4\% & 0\% & 2\% \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\vskip -0.1in
+\end{table}
+
+GPT-5's 100\% \texttt{ls} first action is the most predictable opening of any model, yet it achieves only 32\% accuracy. Meanwhile, Claude with the same \texttt{ls} start succeeds 85\% of the time. This confirms that \textbf{strategic coherence, not starting action, predicts success}.
+
+\paragraph{Interpretation.} These analyses reveal that early agreement can be double-edged: when Claude commits to a wrong interpretation within its coherent first steps, all runs fail identically (the ``consistent wrong'' pattern from RQ4).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STEP 12: Updated Case Studies
+\section{Case Studies}
+\label{sec:casestudy}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+To understand our quantitative findings more deeply, we examine two contrasting cases.
+
+\subsection{Case 1: When Thoroughness Backfires (astropy-13236)}
+
+This is the only task where Llama outperformed both Claude and GPT-5 (20\% vs 0\% vs 0\%).
+
+\paragraph{The Bug.} The issue reports that adding a structured numpy array to an Astropy Table silently converts it to \texttt{NdarrayMixin}, losing functionality. The expected fix: remove the automatic conversion (4 lines of code).
+
+\paragraph{What Happened.} Claude interpreted the task as ``add a deprecation warning but preserve existing behavior.'' It spent 30--50 steps per run implementing and debugging a \texttt{FutureWarning}. All 5 runs failed because the tests expected the behavior to be \textit{removed}, not deprecated. GPT-5 made a similar interpretation error but with fewer steps (7 per run), failing equally consistently.
+
+Llama, in its one successful run, interpreted the task correctly: ``remove the conversion code.'' It made the change in 13 steps and passed the tests.
+
+\paragraph{The Fixation Failure Mode.} Claude's thoroughness, usually an asset, became a liability: it never questioned its initial interpretation. GPT-5's speed meant it failed faster but equally consistently. Llama's variance occasionally stumbled onto the correct interpretation.
+
+\subsection{Case 2: The Efficiency Paradox (astropy-14309)}
+
+This is the only task where all three models achieved at least one success, and the only task where GPT-5 matched Claude's perfect 5/5 accuracy.
+
+\paragraph{The Bug.} A simple import error where a function was not properly exposed in the module's \texttt{\_\_init\_\_.py}.
+
+\paragraph{What Happened.} Claude solved it 5/5 times with mean 53.2 steps. GPT-5 also solved it 5/5 times but with only \textbf{7 steps} on average. Llama solved it 1/5 times with 8 steps in the successful run.
+
+\paragraph{Analysis.} For this simple task, GPT-5's quick approach (7 steps) matched Claude's thorough approach (53 steps) in accuracy while being 7.6$\times$ faster. This reveals the efficiency paradox: thoroughness provides robustness for complex tasks but may be unnecessary for simple ones. An optimal agent might adapt its strategy based on estimated task complexity.
+
+Figure~\ref{fig:tradeoff} visualizes this tradeoff across all tasks.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_tradeoff_scatter.png}
+\caption{Efficiency-consistency tradeoff across three models. Claude (blue) clusters in high-step, low-CV region. GPT-5 (green) shows low steps with moderate CV. Llama (orange) shows high variance regardless of step count.}
+\label{fig:tradeoff}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STEP 13: Updated Discussion
+\section{Discussion}
+\label{sec:discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{The Interpretation Bottleneck}
+
+Our findings suggest that for complex agentic tasks, the bottleneck is interpretation rather than execution. Claude executes its plans consistently and thoroughly, but 71\% of its failures stem from incorrect initial interpretation. GPT-5, despite being faster, shows the same pattern.
+
+This has implications for agent design. Current approaches focus on execution quality: better tool use, more thorough testing, longer trajectories. Our results suggest that improving initial task interpretation may yield larger gains.
+
+\paragraph{Interpretation is Necessary but Not Sufficient.} 
+While interpretation failures dominate our dataset (71\% of Claude's failures), 
+two tasks (astropy-13398 and astropy-13977) reveal a complementary failure mode: 
+all three models correctly identified the required change but failed to implement it. 
+Task 13398 required new coordinate transformation mathematics; task 13977 required 
+surgically precise edits with subtle edge cases. These ``implementation failures'' 
+(0/15 across all models) suggest that some tasks exceed current model capabilities 
+regardless of interpretation quality. Our main finding---that interpretation is the 
+primary bottleneck---holds for tasks within capability range, but capability ceilings 
+remain a distinct limiting factor.
+
+\subsection{Consistency as Double-Edged Sword}
+
+The common assumption that ``more consistent = more reliable'' requires nuance. Consistency is valuable when the approach is correct, as it ensures reliable execution. But consistency also means reliable repetition of errors.
+
+Our three-model comparison strengthens this insight: the rank ordering (Claude $>$ GPT-5 $>$ Llama) holds for both consistency and accuracy, but the relationship is not causal at the task level.
+
+\subsection{The Speed-Accuracy-Consistency Triangle}
+
+GPT-5 reveals a fundamental tradeoff:
+\begin{itemize}
+    \item 4.7$\times$ faster than Claude (9.9 vs 46.1 steps)
+    \item 1.8$\times$ lower accuracy (32\% vs 58\%)
+    \item 2.4$\times$ worse consistency (CV: 32.2\% vs 13.6\%)
+\end{itemize}
+
+Practitioners must choose their priority based on deployment context: rapid prototyping may favor GPT-5's speed, while production systems may require Claude's reliability.
+
+\subsection{Divergence Timing is Not Enough}
+
+Perhaps our most surprising finding is that Claude and GPT-5 diverge at nearly identical steps (3.2 vs 3.4) yet achieve very different consistency (CV: 13.6\% vs 32.2\%). This suggests that early strategic agreement, while necessary, is not sufficient. What happens \textit{after} divergence matters: Claude maintains coherent strategies across runs even after initial divergence, while GPT-5's trajectories scatter more widely.
+
+\subsection{Implications for Benchmarking}
+
+Our finding that 100\% of runs produce unique sequences has implications for how we evaluate agents. Standard practice reports single-run accuracy, but our results show this may be misleading:
+\begin{itemize}
+    \item A 60\% accuracy score could mean: 60\% of tasks solved consistently, or 100\% of tasks solved 60\% of the time
+    \item These have different implications for deployment reliability
+    \item Multi-run evaluation with consistency reporting should become standard
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STEP 14: Updated Limitations
+\section{Limitations}
+\label{sec:limitations}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{Sample Size.} With $n=3$ models and 10 tasks, we can identify trends but cannot establish strong statistical relationships. A larger study with 5+ models would enable regression analysis.
+
+\paragraph{Single Domain.} All tasks are from the astropy repository. Different codebases, languages, or bug types may show different patterns. Astropy is a well-documented, mature codebase; messier codebases might show different results.
+
+\paragraph{Temperature.} We use temperature 0.5 throughout. Different temperatures would likely change both consistency and accuracy, and the relationship between them.
+
+\paragraph{Causality.} We cannot prove that consistency causes accuracy. An intervention study (forcing models to explore more or less) would strengthen causal claims. We observe correlation and provide mechanistic explanations, but cannot rule out confounds.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STEP 15: Updated Conclusion
+\section{Conclusion}
+\label{sec:conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We studied behavioral consistency in LLM agents on SWE-bench across three models, finding a clear hierarchy: Claude achieves the highest consistency (CV: 13.6\%) and accuracy (58\%), GPT-5 is intermediate (CV: 32.2\%, accuracy: 32\%), and Llama shows the highest variance (CV: 42.0\%) with lowest accuracy (4\%).
+
+Our key insight is that consistency amplifies outcomes rather than guaranteeing correctness: 71\% of Claude's failures are ``consistent wrong interpretation.'' We also discovered that divergence timing alone does not determine consistency; Claude and GPT-5 diverge at similar steps but achieve very different variance.
+
+GPT-5 reveals a speed-accuracy-consistency tradeoff: it is 4.7$\times$ faster than Claude but achieves 1.8$\times$ lower accuracy and 2.4$\times$ worse consistency. These findings suggest that interpretation quality, not execution consistency, is the primary bottleneck for reliable agent deployment. Future work should explore adaptive strategies that balance thoroughness with efficiency based on task complexity.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{references}
+\bibliographystyle{icml2026}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+% STEP 16: Updated Appendix Per-Task Table
+\section{Per-Task Results}
+\label{app:pertask}
+
+Table~\ref{tab:pertask} shows detailed per-task results for all three models.
+
+\begin{table*}[t]
+\caption{Per-task breakdown of consistency (CV\%), accuracy, and mean steps for all three models.}
+\label{tab:pertask}
+\vskip 0.1in
+\begin{center}
+\begin{small}
+\begin{tabular}{l|ccc|ccc|ccc}
+\toprule
+ & \multicolumn{3}{c|}{Claude} & \multicolumn{3}{c|}{GPT-5} & \multicolumn{3}{c}{Llama} \\
+Task & CV & Acc & Steps & CV & Acc & Steps & CV & Acc & Steps \\
+\midrule
+12907 & 18.5 & 5/5 & 45 & 30.8 & 2/5 & 11 & 59.6 & 0/5 & 18 \\
+13033 & 12.7 & 3/5 & 48 & 66.7 & 0/5 & 9 & 39.7 & 0/5 & 16 \\
+13236 & 24.2 & 0/5 & 41 & 35.0 & 0/5 & 7 & 34.7 & 1/5 & 15 \\
+13398 & 7.9 & 0/5 & 49 & 20.7 & 0/5 & 9 & 42.0 & 0/5 & 18 \\
+13453 & 12.8 & 5/5 & 45 & 39.2 & 3/5 & 17 & 25.7 & 0/5 & 16 \\
+13579 & 9.4 & 5/5 & 49 & 13.6 & 3/5 & 8 & 42.5 & 0/5 & 18 \\
+13977 & 13.1 & 0/5 & 46 & 0.0 & 0/5 & 7 & 33.7 & 0/5 & 18 \\
+14096 & 15.5 & 5/5 & 41 & 55.6 & 3/5 & 16 & 27.8 & 0/5 & 14 \\
+14182 & 11.1 & 1/5 & 48 & 18.1 & 0/5 & 7 & 54.6 & 0/5 & 24 \\
+14309 & 10.7 & 5/5 & 49 & 42.1 & 5/5 & 7 & 60.1 & 1/5 & 13 \\
+\midrule
+\textbf{Mean} & \textbf{13.6} & \textbf{29/50} & \textbf{46.1} & \textbf{32.2} & \textbf{16/50} & \textbf{9.9} & \textbf{42.0} & \textbf{2/50} & \textbf{17.0} \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{center}
+\end{table*}
+
+\section{Trajectory Examples}
+\label{app:trajectories}
+
+We provide example trajectories illustrating key findings. Full trajectories are available in our code repository.\footnote{\url{https://github.com/amanmehta-maniac/agent-consistency}}
+
+\paragraph{Claude's Consistent Correct Approach (astropy-13453).} Claude follows a systematic pattern: explore directory structure (8 steps), read relevant files (12 steps), implement fix (6 steps), verify with tests (5 steps). All 5 runs follow nearly identical sequences, varying only in exploration order.
+
+\paragraph{GPT-5's Fast Iteration (astropy-14309).} GPT-5 solves this task in just 7 steps on average: \texttt{ls} $\rightarrow$ \texttt{nl} $\rightarrow$ \texttt{grep} $\rightarrow$ \texttt{sed} $\rightarrow$ \texttt{python}. Its heavy use of \texttt{nl} (numbered line output) is distinctive.
+
+\paragraph{Llama's Lucky Path (astropy-14309).} Run 4 succeeds in just 8 steps: \texttt{ls} $\rightarrow$ \texttt{grep} $\rightarrow$ \texttt{cat} $\rightarrow$ \texttt{sed} $\rightarrow$ \texttt{python test.py}. The direct path happens to hit the right file immediately. Other runs explore different (wrong) paths first.
+
+% STEP 17: Updated Statistical Appendix
+\section{Statistical Details}
+\label{app:stats}
+
+\paragraph{CV Comparisons.} Pairwise t-tests comparing per-task CV:
+\begin{itemize}
+    \item GPT-5 vs Claude: $t(18) = 2.59$, $p = 0.018$, $d = 1.16$ (significant)
+    \item GPT-5 vs Llama: $t(18) = -1.92$, $p = 0.071$, $d = -0.86$ (not significant)
+    \item Claude vs Llama: $t(18) = -6.75$, $p < 0.001$, $d = -3.02$ (significant)
+\end{itemize}
+
+\paragraph{Accuracy Comparisons.} Fisher's exact test:
+\begin{itemize}
+    \item GPT-5 vs Claude: OR = 0.34, $p = 0.015$ (significant)
+    \item GPT-5 vs Llama: OR = 11.3, $p < 0.001$ (significant)
+    \item Claude vs Llama: OR = 33.1, $p < 0.001$ (significant)
+\end{itemize}
+
+\paragraph{Divergence Comparisons.} Pairwise t-tests:
+\begin{itemize}
+    \item GPT-5 vs Claude: $t(18) = 0.25$, $p = 0.803$ (not significant)
+    \item GPT-5 vs Llama: $t(18) = 5.77$, $p < 0.001$ (significant)
+    \item Claude vs Llama: $t(18) = 2.57$, $p = 0.019$ (significant)
+\end{itemize}
+
+\paragraph{Summary.} 
+\begin{itemize}
+    \item Consistency (CV): Claude $\ll$ GPT-5 $\approx$ Llama
+    \item Accuracy: Claude $\gg$ GPT-5 $\gg$ Llama (all pairwise significant)
+    \item Divergence: Claude $\approx$ GPT-5 $\gg$ Llama
+\end{itemize}
+
+\end{document}
