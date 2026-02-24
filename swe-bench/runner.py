@@ -100,6 +100,7 @@ class SWERun:
     total_cost: float = 0.0
     n_calls: int = 0
     n_steps: int = 0
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -123,13 +124,49 @@ class TaskResult:
 # Tracked Agent
 # ============================================================================
 
+INTERPRETATION_GUARD_PROMPT = (
+    "STOP. Before making any code changes, you must first state your task interpretation.\n"
+    "Output the following structured block (plain text, no bash command):\n\n"
+    "TASK INTERPRETATION:\n"
+    "(a) Expected behavior change: <one sentence describing what should change>\n"
+    "(b) Likely files/modules: <1-3 file paths or module names>\n"
+    "(c) Verification plan: <1-2 checks or tests to confirm the fix>\n\n"
+    "After outputting this block, continue with your edit in the next step."
+)
+
+
+def _is_edit_action(action: str) -> bool:
+    """Check if a bash command is an EDIT-class action."""
+    action_stripped = action.strip()
+    if action_stripped.startswith(("sed ", "sed\t", "awk ", "awk\t", "patch ")):
+        return True
+    if action_stripped.startswith(("echo ", "printf ")) and (">" in action_stripped):
+        return True
+    if action_stripped.startswith("cat ") and ("<<" in action_stripped or ">" in action_stripped):
+        return True
+    if action_stripped.startswith(("tee ", "mv ", "cp ")) and ">" in action_stripped:
+        return True
+    # python/python3 one-liners writing to files
+    if action_stripped.startswith(("python -c", "python3 -c")) and ">" in action_stripped:
+        return True
+    # perl in-place editing
+    if action_stripped.startswith(("perl -i", "perl -pi")):
+        return True
+    return False
+
+
 class TrackedAgent(DefaultAgent):
     """Wrapper around DefaultAgent that tracks action sequences."""
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, interpretation_guard: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
         self.tracked_steps: List[SWEStep] = []
         self.step_count = 0
+        self.interpretation_guard = interpretation_guard
+        self._guard_fired = False
+        self.guard_text: Optional[str] = None
+        self.guard_step_index: Optional[int] = None
+        self.guard_intercepted_action: Optional[str] = None
     
     def step(self) -> dict:
         """Override step() to track actions. Follows original flow exactly."""
@@ -144,6 +181,24 @@ class TrackedAgent(DefaultAgent):
         # Parse action
         action_dict = self.parse_action(response)
         action = action_dict["action"]
+        
+        # --- Interpretation Guard ---
+        # Before the first EDIT action, inject a guard step
+        if (self.interpretation_guard
+                and not self._guard_fired
+                and _is_edit_action(action)):
+            self._fire_guard(step_start, thought, action, raw_response)
+            # Re-query to get the actual edit command.
+            # If parse_action raises FormatError, it propagates to run()
+            # which handles it via _track_error_step (with its own increment).
+            step_start = datetime.now().isoformat()
+            response = self.query()
+            raw_response = response.get("content", "")
+            thought = self._extract_thought(raw_response)
+            action_dict = self.parse_action(response)
+            action = action_dict["action"]
+            # Increment only after parse succeeds to avoid double-count on FormatError
+            self.step_count += 1
         
         # Execute action
         output = self.execute_action(action_dict)
@@ -168,6 +223,51 @@ class TrackedAgent(DefaultAgent):
         
         return output
     
+    def _fire_guard(self, step_start: str, thought: str, action: str, raw_response: str):
+        """Inject the interpretation guard before the first EDIT action."""
+        self._guard_fired = True
+        self.guard_step_index = self.step_count
+        self.guard_intercepted_action = action
+
+        # Track the intercepted edit step as a guard step
+        guard_step = SWEStep(
+            step_number=self.step_count,
+            timestamp=step_start,
+            thought=thought,
+            action=f"[GUARD_INTERCEPTED] {action}",
+            observation="Interpretation guard triggered before first edit.",
+            returncode=0,
+            raw_response=raw_response,
+        )
+        self.tracked_steps.append(guard_step)
+
+        # Inject guard prompt into conversation
+        self.add_message("user", INTERPRETATION_GUARD_PROMPT)
+
+        # Query LLM for interpretation (uses self.query() for limit checks)
+        guard_response = self.query()
+        guard_content = guard_response.get("content", "")
+        self.guard_text = guard_content
+
+        # Track the guard response as a step
+        self.step_count += 1
+        guard_reply_step = SWEStep(
+            step_number=self.step_count,
+            timestamp=datetime.now().isoformat(),
+            thought=guard_content,
+            action="[INTERPRETATION_GUARD]",
+            observation="Guard interpretation recorded.",
+            returncode=0,
+            raw_response=guard_content,
+        )
+        self.tracked_steps.append(guard_reply_step)
+
+        # Now prompt the agent to continue with its edit
+        self.add_message("user",
+            "Thank you. Now proceed with your planned code change. "
+            "Provide exactly one bash command."
+        )
+
     def _extract_thought(self, response: str) -> str:
         """Extract reasoning/thought from response (text before bash block)."""
         bash_match = response.find("```bash")
@@ -186,6 +286,10 @@ class TrackedAgent(DefaultAgent):
         self.messages = []
         self.tracked_steps = []
         self.step_count = 0
+        self._guard_fired = False
+        self.guard_text = None
+        self.guard_step_index = None
+        self.guard_intercepted_action = None
         
         self.add_message("system", self.render_template(self.config.system_template))
         self.add_message("user", self.render_template(self.config.instance_template))
@@ -232,6 +336,7 @@ class SWEBenchRunner:
         max_steps: int = 250,
         timeout: int = 30,
         use_docker: bool = False,
+        interpretation_guard: bool = False,
     ):
         self.model_name = model_name
         self.provider = provider
@@ -241,6 +346,7 @@ class SWEBenchRunner:
         self.max_steps = max_steps
         self.timeout = timeout
         self.use_docker = use_docker
+        self.interpretation_guard = interpretation_guard
         
         # Load agent config - use SWE-bench config for Docker, default for local
         if use_docker:
@@ -310,7 +416,9 @@ class SWEBenchRunner:
         else:
             env = LocalEnvironment(timeout=self.timeout)
         
-        agent = TrackedAgent(model=model, env=env, **self.agent_config)
+        agent = TrackedAgent(model=model, env=env,
+                             interpretation_guard=self.interpretation_guard,
+                             **self.agent_config)
         return agent, env
     
     def run_single(self, task: str, task_id: str, run_number: int, task_data: Optional[Dict[str, str]] = None) -> SWERun:
@@ -331,12 +439,22 @@ class SWEBenchRunner:
             exit_status, message = agent.run(task)
             end_time = datetime.now().isoformat()
             
-            # Extract action sequence (just bash commands)
-            action_sequence = [s.action for s in agent.tracked_steps if s.action and s.action != "[ERROR]"]
+            # Extract action sequence (just real bash commands, exclude guard/error pseudo-actions)
+            action_sequence = [s.action for s in agent.tracked_steps
+                               if s.action
+                               and not s.action.startswith("[")]
             
             # Determine success
             success = exit_status == "Submitted"
             final_output = message if success else None
+            
+            # Collect guard metadata if applicable
+            metadata = {}
+            if self.interpretation_guard:
+                metadata["interpretation_guard_enabled"] = True
+                metadata["interpretation_guard_text"] = agent.guard_text
+                metadata["interpretation_guard_step"] = agent.guard_step_index
+                metadata["interpretation_guard_intercepted_action"] = agent.guard_intercepted_action
             
             return SWERun(
                 run_id=run_id,
@@ -356,6 +474,7 @@ class SWEBenchRunner:
                 total_cost=agent.model.cost,
                 n_calls=agent.model.n_calls,
                 n_steps=len(agent.tracked_steps),
+                metadata=metadata,
             )
             
         except Exception as e:
@@ -597,6 +716,11 @@ Examples:
     parser.add_argument("--max-steps", type=int, default=250, help="Max steps per run")
     parser.add_argument("--results-dir", default="results", help="Output directory")
     
+    # Intervention flags
+    parser.add_argument("--interpretation-guard", action="store_true", default=False,
+                        help="Enable interpretation guard: inject a structured interpretation "
+                             "checkpoint before the first EDIT action in each run")
+    
     args = parser.parse_args()
     
     # Validate
@@ -611,6 +735,7 @@ Examples:
         temperature=args.temperature,
         max_steps=args.max_steps,
         use_docker=args.swebench,  # Use Docker for SWE-bench, Local for simple tasks
+        interpretation_guard=args.interpretation_guard,
     )
     
     # Get tasks
