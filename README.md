@@ -95,6 +95,28 @@ Current experiments:
 
 See `hotpotqa/figures/` for visualizations comparing consistency across models.
 
+## Key Findings
+
+> **TL;DR:** Behavioral consistency strongly predicts agent correctness. 
+> Consistent agents hit 80–92% accuracy. Inconsistent ones: 25–60%.
+
+1. **Consistency predicts correctness** — Tasks where the agent produces 
+   ≤2 unique action sequences across runs: 80–92% accuracy. Tasks with 
+   ≥6 unique sequences: 25–60%. A 32–55 percentage point gap.
+
+2. **Divergence happens early** — 69% of behavioral divergence occurs at 
+   step 2 (the first search query). Get the first tool call right and 
+   downstream runs converge.
+
+3. **Path length signals failure** — Consistent tasks average 3.4 steps 
+   (85.7% accuracy). Inconsistent tasks average 7.8 steps (43% accuracy).
+
+4. **Models vary significantly** — Llama 3.1 70B produces 4.2 unique 
+   action sequences per task on average. Claude Sonnet: 2.0. GPT-4o: 2.4.
+
+**Practical takeaway:** Run your agent 3–5x in parallel. If trajectories 
+agree, trust the answer. If they scatter, flag for review.
+
 ## License
 
 Research code - see individual papers for licensing.
