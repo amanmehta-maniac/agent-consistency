@@ -1,12 +1,12 @@
 """
 ReAct agent implementation for HotpotQA.
-Supports OpenAI, Together AI, and Anthropic APIs with structured JSON logging.
+Supports OpenAI, Together AI, Anthropic APIs, and Llama on SPCS with hidden state extraction.
 """
 
 import json
 import asyncio
 from typing import Dict, List, Optional, Any, Literal, Callable
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import openai
@@ -24,6 +24,7 @@ class AgentStep:
     action_input: Dict[str, Any]
     observation: str
     raw_response: str
+    hidden_states: Optional[Dict[str, Any]] = None  # Hidden states from SPCS Llama
 
 
 @dataclass
@@ -32,7 +33,7 @@ class AgentRun:
     run_id: str
     task_id: str
     model: str
-    provider: Literal["openai", "together", "anthropic"]
+    provider: Literal["openai", "together", "anthropic", "llama_spcs", "llama_k8s"]
     question: str
     steps: List[AgentStep]
     final_answer: Optional[str] = None
@@ -51,10 +52,12 @@ class ReActAgent:
     def __init__(
         self,
         model: str,
-        provider: Literal["openai", "together", "anthropic"],
+        provider: Literal["openai", "together", "anthropic", "llama_spcs", "llama_k8s"],
         openai_api_key: Optional[str] = None,
         together_api_key: Optional[str] = None,
         anthropic_api_key: Optional[str] = None,
+        spcs_connection: Optional[str] = None,
+        k8s_endpoint: Optional[str] = None,
         max_steps: int = 15,
         temperature: float = 0.7,
         search_fn: Optional[Callable[[str], Any]] = None,
@@ -65,10 +68,12 @@ class ReActAgent:
         
         Args:
             model: Model name (e.g., "gpt-4o", "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo")
-            provider: "openai" or "together"
+            provider: "openai", "together", "anthropic", "llama_spcs", or "llama_k8s"
             openai_api_key: OpenAI API key (required if provider is "openai")
             together_api_key: Together AI API key (required if provider is "together")
             anthropic_api_key: Anthropic API key (required if provider is "anthropic")
+            spcs_connection: Snowflake connection name (required if provider is "llama_spcs")
+            k8s_endpoint: Llama 70B k8s endpoint URL (required if provider is "llama_k8s")
             max_steps: Maximum number of reasoning-action steps
             temperature: Sampling temperature
             search_fn: Optional custom async search function (query: str) -> str
@@ -78,6 +83,7 @@ class ReActAgent:
         self.provider = provider
         self.max_steps = max_steps
         self.temperature = temperature
+        self._last_hidden_states = None  # Store hidden states from last LLM call
         
         # Initialize API clients
         self.executor = None
@@ -95,6 +101,18 @@ class ReActAgent:
             if not anthropic_api_key:
                 raise ValueError("anthropic_api_key required for Anthropic provider")
             self.client = AsyncAnthropic(api_key=anthropic_api_key)
+        elif provider == "llama_spcs":
+            if not spcs_connection:
+                raise ValueError("spcs_connection required for llama_spcs provider")
+            self.spcs_connection = spcs_connection
+            # Use thread pool executor for Snowflake calls
+            self.executor = ThreadPoolExecutor(max_workers=1)
+        elif provider == "llama_k8s":
+            if not k8s_endpoint:
+                raise ValueError("k8s_endpoint required for llama_k8s provider")
+            self.k8s_endpoint = k8s_endpoint
+            # Use thread pool executor for HTTP calls
+            self.executor = ThreadPoolExecutor(max_workers=1)
         else:
             raise ValueError(f"Unknown provider: {provider}")
         
@@ -170,33 +188,126 @@ class ReActAgent:
                 if getattr(block, "type", None) == "text":
                     parts.append(block.text)
             return "\n".join(parts).strip()
+        
+        elif self.provider == "llama_spcs":
+            # Call Llama on SPCS via Snowflake SQL
+            import subprocess
+            
+            loop = asyncio.get_event_loop()
+            
+            def call_spcs():
+                # Build SQL query to call the chat completion function
+                # Escape for SQL: double single quotes and escape backslashes
+                messages_json = json.dumps(full_messages)
+                # For Snowflake SQL strings: escape backslashes first, then single quotes
+                messages_escaped = messages_json.replace("\\", "\\\\").replace("'", "''")
+                
+                sql = f"""
+                USE WAREHOUSE XSMALL;
+                SELECT GPU_NOTEBOOK_DB.GPU_NOTEBOOK_SCHEMA.CHAT_COMPLETION_HS(
+                    PARSE_JSON('{messages_escaped}'),
+                    512,
+                    {self.temperature}
+                ) AS response
+                """
+                
+                result = subprocess.run(
+                    ["snow", "sql", "-c", self.spcs_connection, "-q", sql, "--format", "JSON"],
+                    capture_output=True,
+                    text=True,
+                    timeout=300
+                )
+                
+                if result.returncode != 0:
+                    raise RuntimeError(f"Snowflake SQL failed: {result.stderr}")
+                
+                # Parse the JSON output
+                # Output is list of statement results: [[USE WAREHOUSE result], [SELECT result]]
+                # Each statement result is a list of rows
+                output = json.loads(result.stdout)
+                # Get the SELECT result (second statement), first row, RESPONSE column
+                select_result = output[1][0]  # Second statement, first row
+                response_str = select_result["RESPONSE"]
+                response_data = json.loads(response_str) if isinstance(response_str, str) else response_str
+                
+                # Store hidden states for later retrieval
+                self._last_hidden_states = response_data.get("hidden_states")
+                
+                return response_data.get("content", "")
+            
+            return await loop.run_in_executor(self.executor, call_spcs)
+        
+        elif self.provider == "llama_k8s":
+            # Call Llama 70B on k8s via HTTP
+            import requests
+            
+            loop = asyncio.get_event_loop()
+            
+            def call_k8s():
+                # Build request payload
+                payload = {
+                    "messages": [{"role": m["role"], "content": m["content"]} for m in full_messages],
+                    "max_new_tokens": 512,
+                    "temperature": self.temperature,
+                    "stop_sequences": ["Observation:"],  # Stop after Action Input so agent loop can inject real observations
+                    "return_hidden_states": True,
+                    "hidden_state_pooling": "last"
+                }
+                
+                response = requests.post(
+                    f"{self.k8s_endpoint}/v1/chat/completions",
+                    json=payload,
+                    timeout=300
+                )
+                
+                if response.status_code != 200:
+                    raise RuntimeError(f"K8s endpoint failed: {response.status_code} {response.text}")
+                
+                response_data = response.json()
+                
+                # Store hidden states for later retrieval
+                self._last_hidden_states = response_data.get("hidden_states")
+                
+                return response_data.get("content", "")
+            
+            return await loop.run_in_executor(self.executor, call_k8s)
     
     def _get_system_prompt(self) -> str:
         """Get the system prompt for ReAct agent."""
         return """You are a helpful assistant that answers questions using a ReAct (Reasoning + Acting) approach.
 
 You have access to the following tools:
-1. Search(query): Search for relevant information about a topic. Returns a list of document titles.
-2. Retrieve(title): Retrieve the full content of a document by its title. Returns the document text.
-3. Finish(answer): Use this when you have the final answer to the question. This ends the task.
+1. Search(query): Search for relevant information. Returns ONLY document titles (not content).
+2. Retrieve(title): Get the full text of a document. You MUST use this to read document content.
+3. Finish(answer): Submit your final answer.
 
-Your response should follow this format:
-Thought: [your reasoning about what to do next]
-Action: [tool name]
-Action Input: {"key": "value"}  # JSON format
+CRITICAL: Search returns titles only. To read a document, you must call Retrieve with the exact title.
 
-After each action, you will receive an Observation. Then continue with another Thought-Action cycle until you can Finish.
+Format:
+Thought: [reasoning]
+Action: [Search/Retrieve/Finish]
+Action Input: {"key": "value"}
 
-Example:
-Thought: I need to find information about the topic.
+Complete Example:
+Question: What is the capital of the country where the Eiffel Tower is located?
+
+Thought: I need to find where the Eiffel Tower is located.
 Action: Search
-Action Input: {"query": "topic name"}
+Action Input: {"query": "Eiffel Tower"}
 
-Observation: [results will appear here]
+Observation: Found 3 relevant document(s): Eiffel Tower, Paris architecture, Gustave Eiffel
 
-Thought: Now I have enough information to answer.
+Thought: Search returned document titles. I need to retrieve "Eiffel Tower" to read its content.
+Action: Retrieve
+Action Input: {"title": "Eiffel Tower"}
+
+Observation: The Eiffel Tower is a wrought-iron lattice tower on the Champ de Mars in Paris, France...
+
+Thought: The document says the Eiffel Tower is in Paris, France. The capital of France is Paris.
 Action: Finish
-Action Input: {"answer": "final answer"}
+Action Input: {"answer": "Paris"}
+
+Now answer the user's question using this same pattern: Search -> Retrieve -> Finish.
 """
     
     def _parse_response(self, response: str) -> tuple[str, str, Dict[str, Any]]:
@@ -351,7 +462,12 @@ Action Input: {"answer": "final answer"}
                     error = observation
                     break
                 
-                # Log step
+                # Log step (include hidden states if available from llama_spcs)
+                hidden_states = None
+                if self.provider in ("llama_spcs", "llama_k8s") and self._last_hidden_states:
+                    hidden_states = self._last_hidden_states
+                    self._last_hidden_states = None  # Clear after capturing
+                
                 step = AgentStep(
                     step_number=step_num,
                     timestamp=datetime.now().isoformat(),
@@ -360,6 +476,7 @@ Action Input: {"answer": "final answer"}
                     action_input=action_input,
                     observation=observation,
                     raw_response=response,
+                    hidden_states=hidden_states,
                 )
                 steps.append(step)
                 
@@ -430,10 +547,12 @@ async def run_agent_async(
     question: str,
     task_id: str,
     model: str,
-    provider: Literal["openai", "together", "anthropic"],
+    provider: Literal["openai", "together", "anthropic", "llama_spcs", "llama_k8s"],
     openai_api_key: Optional[str] = None,
     together_api_key: Optional[str] = None,
     anthropic_api_key: Optional[str] = None,
+    spcs_connection: Optional[str] = None,
+    k8s_endpoint: Optional[str] = None,
     run_id: Optional[str] = None,
     **kwargs,
 ) -> AgentRun:
@@ -444,10 +563,12 @@ async def run_agent_async(
         question: The question to answer
         task_id: Identifier for the task
         model: Model name
-        provider: "openai", "together", or "anthropic"
+        provider: "openai", "together", "anthropic", "llama_spcs", or "llama_k8s"
         openai_api_key: OpenAI API key
         together_api_key: Together AI API key
         anthropic_api_key: Anthropic API key
+        spcs_connection: Snowflake connection name (for llama_spcs)
+        k8s_endpoint: Llama 70B k8s endpoint URL (for llama_k8s)
         run_id: Optional run identifier
         **kwargs: Additional arguments passed to ReActAgent
         
@@ -460,6 +581,8 @@ async def run_agent_async(
         openai_api_key=openai_api_key,
         together_api_key=together_api_key,
         anthropic_api_key=anthropic_api_key,
+        spcs_connection=spcs_connection,
+        k8s_endpoint=k8s_endpoint,
         **kwargs,
     )
     return await agent.run(question=question, task_id=task_id, run_id=run_id)
@@ -470,10 +593,12 @@ async def run_agent_n_times(
     task_id: str,
     n: int,
     model: str,
-    provider: Literal["openai", "together", "anthropic"],
+    provider: Literal["openai", "together", "anthropic", "llama_spcs", "llama_k8s"],
     openai_api_key: Optional[str] = None,
     together_api_key: Optional[str] = None,
     anthropic_api_key: Optional[str] = None,
+    spcs_connection: Optional[str] = None,
+    k8s_endpoint: Optional[str] = None,
     run_id_prefix: Optional[str] = None,
     batch_size: Optional[int] = None,
     batch_delay: float = 0.0,
@@ -488,10 +613,12 @@ async def run_agent_n_times(
         task_id: Identifier for the task
         n: Number of runs
         model: Model name
-        provider: "openai", "together", or "anthropic"
+        provider: "openai", "together", "anthropic", "llama_spcs", or "llama_k8s"
         openai_api_key: OpenAI API key
         together_api_key: Together AI API key
         anthropic_api_key: Anthropic API key
+        spcs_connection: Snowflake connection name (for llama_spcs)
+        k8s_endpoint: Llama 70B k8s endpoint URL (for llama_k8s)
         run_id_prefix: Optional prefix for run IDs (defaults to task_id)
         batch_size: Optional batch size for throttling (used mainly for OpenAI)
         batch_delay: Delay in seconds between batches
@@ -515,6 +642,8 @@ async def run_agent_n_times(
             openai_api_key=openai_api_key,
             together_api_key=together_api_key,
             anthropic_api_key=anthropic_api_key,
+            spcs_connection=spcs_connection,
+            k8s_endpoint=k8s_endpoint,
             run_id=run_id,
             **kwargs,
         )
