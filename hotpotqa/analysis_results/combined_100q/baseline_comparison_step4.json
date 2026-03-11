@@ -1,0 +1,98 @@
+{
+  "predictors": {
+    "sim_step4_layer40": {
+      "label": "Hidden state similarity (S4 L40)",
+      "r": -0.3474505582835341,
+      "p": 0.0006010541869785292,
+      "n": 94,
+      "significant": true
+    },
+    "question_word_count": {
+      "label": "Question word count",
+      "r": 0.10334608818677644,
+      "p": 0.3087017418466552,
+      "n": 99,
+      "significant": false
+    },
+    "question_char_count": {
+      "label": "Question char count",
+      "r": 0.11613913836105078,
+      "p": 0.25230338005120295,
+      "n": 99,
+      "significant": false
+    },
+    "n_context_docs": {
+      "label": "N context documents",
+      "r": 0.04495906418042903,
+      "p": 0.6585765407630726,
+      "n": 99,
+      "significant": false
+    },
+    "mean_search_first3": {
+      "label": "Mean Search actions in first 3 steps",
+      "r": 0.23450372273393408,
+      "p": 0.019474157673038155,
+      "n": 99,
+      "significant": true
+    },
+    "mean_thought_len_step3": {
+      "label": "Mean thought length at step 3 (chars)",
+      "r": 0.11827222639351802,
+      "p": 0.24363636918279144,
+      "n": 99,
+      "significant": false
+    },
+    "mean_total_thought_len": {
+      "label": "Mean total thought length (chars)",
+      "r": 0.25565050932804495,
+      "p": 0.010650058563243766,
+      "n": 99,
+      "significant": true
+    },
+    "mean_steps": {
+      "label": "Mean step count",
+      "r": 0.21011473991559276,
+      "p": 0.03684957873341286,
+      "n": 99,
+      "significant": true
+    },
+    "correct_rate": {
+      "label": "Accuracy (correct rate)",
+      "r": -0.3128660139328971,
+      "p": 0.0016160509318761595,
+      "n": 99,
+      "significant": true
+    }
+  },
+  "regression": {
+    "r_squared": 0.2980624893897229,
+    "adj_r_squared": 0.27466457236938024,
+    "n": 94,
+    "coefficients": {
+      "similarity": {
+        "beta": -1.0345587870897441,
+        "se": 0.2186708086051124,
+        "t": -4.7311243493776365,
+        "p": 8.24148422107207e-06
+      },
+      "q_word_count": {
+        "beta": -0.0011790075881244857,
+        "se": 0.0036522021667932053,
+        "t": -0.32282100888180193,
+        "p": 0.7475795915942567
+      },
+      "accuracy": {
+        "beta": -0.19222766373183922,
+        "se": 0.043582800198926235,
+        "t": -4.410631323697627,
+        "p": 2.848591280435464e-05
+      },
+      "intercept": {
+        "beta": 1.2642606502270435,
+        "se": 0.21819319465632486,
+        "t": 5.794225856669704,
+        "p": 9.97842002359306e-08
+      }
+    }
+  }
+}

@@ -1028,6 +1028,391 @@ def analysis8_inconsistent_focus(all_data, metrics):
 
 
 # ══════════════════════════════════════════════════════════
+#  ANALYSIS 9: Partial Correlation Controlling for Difficulty
+# ══════════════════════════════════════════════════════════
+
+def analysis9_partial_correlation(metrics):
+    print("\n" + "=" * 70)
+    print("ANALYSIS 9: PARTIAL CORRELATION (controlling for accuracy)")
+    print("=" * 70)
+
+    step, layer = 4, 40
+    target_layers = [32, 40, 48, 56, 64, 72, 80]
+
+    triples = []
+    for m in metrics:
+        if step in m["similarity_by_step_layer"] and layer in m["similarity_by_step_layer"][step]:
+            sim = m["similarity_by_step_layer"][step][layer]
+            if not np.isnan(sim):
+                triples.append({"qid": m["qid"], "cv": m["cv"], "sim": sim,
+                                "accuracy": m["correct_rate"], "difficulty": m["difficulty"]})
+
+    n = len(triples)
+    sims = np.array([t["sim"] for t in triples])
+    cvs = np.array([t["cv"] for t in triples])
+    accs = np.array([t["accuracy"] for t in triples])
+
+    raw_r, raw_p = stats.pearsonr(sims, cvs)
+    print(f"\n  Raw correlation (n={n}): r={raw_r:.4f}, p={raw_p:.6f}")
+
+    acc_cv_r, acc_cv_p = stats.pearsonr(accs, cvs)
+    acc_sim_r, acc_sim_p = stats.pearsonr(accs, sims)
+    print(f"  Accuracy vs CV:         r={acc_cv_r:.4f}, p={acc_cv_p:.6f}")
+    print(f"  Accuracy vs Similarity: r={acc_sim_r:.4f}, p={acc_sim_p:.6f}")
+
+    def partial_corr(x, y, z):
+        _, _, res_x = np.linalg.lstsq(np.column_stack([z, np.ones(len(z))]), x, rcond=None)[:3]
+        _, _, res_y = np.linalg.lstsq(np.column_stack([z, np.ones(len(z))]), y, rcond=None)[:3]
+        residuals_x = x - np.column_stack([z, np.ones(len(z))]) @ np.linalg.lstsq(np.column_stack([z, np.ones(len(z))]), x, rcond=None)[0]
+        residuals_y = y - np.column_stack([z, np.ones(len(z))]) @ np.linalg.lstsq(np.column_stack([z, np.ones(len(z))]), y, rcond=None)[0]
+        r, p = stats.pearsonr(residuals_x, residuals_y)
+        return r, p, residuals_x, residuals_y
+
+    partial_r, partial_p, res_sim, res_cv = partial_corr(sims, cvs, accs.reshape(-1, 1))
+    print(f"\n  Partial corr (sim ~ CV | accuracy): r={partial_r:.4f}, p={partial_p:.6f}")
+    print(f"  Survives confound control: {'YES' if partial_p < 0.05 else 'NO'}")
+
+    diff_binary = np.array([1 if t["difficulty"] == "hard" else 0 for t in triples])
+    controls = np.column_stack([accs, diff_binary])
+    partial_r2, partial_p2, res_sim2, res_cv2 = partial_corr(sims, cvs, controls)
+    print(f"\n  Partial corr (sim ~ CV | accuracy + difficulty_label): r={partial_r2:.4f}, p={partial_p2:.6f}")
+    print(f"  Survives both controls: {'YES' if partial_p2 < 0.05 else 'NO'}")
+
+    print(f"\n  --- Layer-by-layer partial correlations at step {step} ---")
+    print(f"  {'Layer':>5} {'Raw r':>8} {'Raw p':>10} {'Part r':>8} {'Part p':>10} {'Survives':>8}")
+    print("  " + "-" * 60)
+
+    layer_results = {}
+    for l in target_layers:
+        l_triples = []
+        for m in metrics:
+            if step in m["similarity_by_step_layer"] and l in m["similarity_by_step_layer"][step]:
+                sim_l = m["similarity_by_step_layer"][step][l]
+                if not np.isnan(sim_l):
+                    l_triples.append({"sim": sim_l, "cv": m["cv"], "accuracy": m["correct_rate"],
+                                      "difficulty": m["difficulty"]})
+        if len(l_triples) < 10:
+            continue
+        l_sims = np.array([t["sim"] for t in l_triples])
+        l_cvs = np.array([t["cv"] for t in l_triples])
+        l_accs = np.array([t["accuracy"] for t in l_triples])
+        l_diff = np.array([1 if t["difficulty"] == "hard" else 0 for t in l_triples])
+
+        l_raw_r, l_raw_p = stats.pearsonr(l_sims, l_cvs)
+        l_controls = np.column_stack([l_accs, l_diff])
+        l_pr, l_pp, _, _ = partial_corr(l_sims, l_cvs, l_controls)
+        survives = "YES" if l_pp < 0.05 else "no"
+        print(f"  {l:>5} {l_raw_r:>8.4f} {l_raw_p:>10.6f} {l_pr:>8.4f} {l_pp:>10.6f} {survives:>8}")
+
+        layer_results[l] = {
+            "n": len(l_triples),
+            "raw_r": float(l_raw_r), "raw_p": float(l_raw_p),
+            "partial_r": float(l_pr), "partial_p": float(l_pp),
+            "survives": bool(l_pp < 0.05),
+        }
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    ax = axes[0]
+    hard_mask = np.array([t["difficulty"] == "hard" for t in triples])
+    ax.scatter(sims[hard_mask], cvs[hard_mask], c="#d62728", alpha=0.6, s=40, label="Hard", edgecolors="black", linewidth=0.3)
+    ax.scatter(sims[~hard_mask], cvs[~hard_mask], c="#1f77b4", alpha=0.6, s=40, label="Easy", edgecolors="black", linewidth=0.3)
+    ax.set_xlabel("Activation Similarity (Step 4, Layer 40)", fontsize=11)
+    ax.set_ylabel("Behavioral CV", fontsize=11)
+    ax.set_title(f"Raw: r={raw_r:.3f}, p={raw_p:.4f}", fontsize=12)
+    ax.legend(fontsize=9)
+
+    ax = axes[1]
+    ax.scatter(res_sim2[hard_mask], res_cv2[hard_mask], c="#d62728", alpha=0.6, s=40, label="Hard", edgecolors="black", linewidth=0.3)
+    ax.scatter(res_sim2[~hard_mask], res_cv2[~hard_mask], c="#1f77b4", alpha=0.6, s=40, label="Easy", edgecolors="black", linewidth=0.3)
+    ax.set_xlabel("Similarity (residualized)", fontsize=11)
+    ax.set_ylabel("CV (residualized)", fontsize=11)
+    ax.set_title(f"Partial (| accuracy + difficulty): r={partial_r2:.3f}, p={partial_p2:.4f}", fontsize=12)
+    ax.legend(fontsize=9)
+
+    ax = axes[2]
+    layers_plot = sorted(layer_results.keys())
+    raw_rs = [layer_results[l]["raw_r"] for l in layers_plot]
+    part_rs = [layer_results[l]["partial_r"] for l in layers_plot]
+    x_pos = np.arange(len(layers_plot))
+    ax.bar(x_pos - 0.15, raw_rs, 0.3, color="#1f77b4", label="Raw r", edgecolor="black", linewidth=0.5)
+    ax.bar(x_pos + 0.15, part_rs, 0.3, color="#ff7f0e", label="Partial r", edgecolor="black", linewidth=0.5)
+    for i, l in enumerate(layers_plot):
+        sig_raw = "*" if layer_results[l]["raw_p"] < 0.05 else ""
+        sig_part = "*" if layer_results[l]["partial_p"] < 0.05 else ""
+        ax.text(i - 0.15, raw_rs[i] - 0.02, f"{raw_rs[i]:.2f}{sig_raw}", ha="center", fontsize=7, va="top")
+        ax.text(i + 0.15, part_rs[i] - 0.02, f"{part_rs[i]:.2f}{sig_part}", ha="center", fontsize=7, va="top")
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels([str(l) for l in layers_plot], fontsize=9)
+    ax.set_xlabel("Layer", fontsize=11)
+    ax.set_ylabel("Pearson r", fontsize=11)
+    ax.set_title("Raw vs Partial Correlation at Step 4", fontsize=12)
+    ax.axhline(y=0, color="black", linewidth=0.5)
+    ax.legend(fontsize=9)
+
+    plt.suptitle("Partial Correlation: Activation Similarity vs CV, Controlling for Accuracy & Difficulty", fontsize=13, y=1.02)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "partial_correlation_step4.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"\n  Saved: partial_correlation_step4.png")
+
+    result = {
+        "step": step, "n": n,
+        "raw_r_layer40": float(raw_r), "raw_p_layer40": float(raw_p),
+        "partial_r_accuracy_only": float(partial_r), "partial_p_accuracy_only": float(partial_p),
+        "partial_r_accuracy_and_difficulty": float(partial_r2), "partial_p_accuracy_and_difficulty": float(partial_p2),
+        "confounders": {
+            "accuracy_vs_cv": {"r": float(acc_cv_r), "p": float(acc_cv_p)},
+            "accuracy_vs_similarity": {"r": float(acc_sim_r), "p": float(acc_sim_p)},
+        },
+        "layers": {str(k): v for k, v in layer_results.items()},
+    }
+    with open(OUTPUT_DIR / "partial_correlation_step4.json", "w") as f:
+        json.dump(result, f, indent=2)
+    print(f"  Saved: partial_correlation_step4.json")
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════
+#  ANALYSIS 10: Baseline Predictors of Consistency
+# ══════════════════════════════════════════════════════════
+
+def analysis10_baseline_comparison(all_data, metrics):
+    print("\n" + "=" * 70)
+    print("ANALYSIS 10: BASELINE COMPARISON — Simpler Predictors of CV")
+    print("=" * 70)
+
+    step = 4
+    layer = 40
+
+    rows = []
+    for m in metrics:
+        qid = m["qid"]
+        if qid not in all_data:
+            continue
+        entry = all_data[qid]
+        question_text = entry["question"].get("question", "")
+        runs = entry["runs"]
+
+        q_word_count = len(question_text.split())
+        q_char_count = len(question_text)
+        n_context_docs = len(entry["question"].get("context", {}))
+
+        run_features = []
+        for run in runs:
+            traj_steps = []
+            if "hidden_states" in run:
+                pass
+            meta_actions = []
+            thought_lengths = []
+            obs_lengths = []
+            search_count_first3 = 0
+
+            for hs_key in sorted(run["hidden_states"].keys()):
+                pass
+
+        mean_thought_len_step3 = []
+        mean_response_len_step3 = []
+        search_in_first3 = []
+        total_thought_len = []
+
+        for run in runs:
+            run_thoughts = []
+            run_search_first3 = 0
+            run_step3_thought = None
+
+            qid_in_data = qid
+            if entry["difficulty"] in ("easy", "hard"):
+                pass
+
+        has_trajectories = False
+        for run in runs:
+            if "hidden_states" in run:
+                pass
+
+        pilot_or_new60 = qid in {qdir.name for qdir in
+                                  list(Path("pilot_hidden_states_70b").iterdir()) +
+                                  list(Path("experiment_60q_results").iterdir())
+                                  if qdir.is_dir()}
+        easier_format = not pilot_or_new60
+
+        run_thought_lens_at_step3 = []
+        run_search_first3_counts = []
+        run_total_thought_lens = []
+
+        if easier_format:
+            fp = Path("results_easier") / f"{qid}.json"
+            if fp.exists():
+                with open(fp) as f:
+                    easier_data = json.load(f)
+                for run_data in easier_data.get("runs", []):
+                    steps = run_data.get("steps", [])
+                    search_first3 = sum(1 for s in steps[:3] if s.get("action") == "Search")
+                    run_search_first3_counts.append(search_first3)
+                    total_t = sum(len(s.get("thought", "")) for s in steps)
+                    run_total_thought_lens.append(total_t)
+                    if len(steps) >= 3:
+                        run_thought_lens_at_step3.append(len(steps[2].get("thought", "")))
+        else:
+            base_dir = Path("pilot_hidden_states_70b") / qid
+            if not base_dir.exists():
+                base_dir = Path("experiment_60q_results") / qid
+            if base_dir.exists():
+                for run_dir in sorted(base_dir.glob("run_*")):
+                    traj_file = run_dir / "trajectory.json"
+                    if not traj_file.exists():
+                        continue
+                    with open(traj_file) as f:
+                        traj = json.load(f)
+                    steps = traj.get("steps", [])
+                    search_first3 = sum(1 for s in steps[:3] if s.get("action") == "Search")
+                    run_search_first3_counts.append(search_first3)
+                    total_t = sum(len(s.get("thought", "")) for s in steps)
+                    run_total_thought_lens.append(total_t)
+                    if len(steps) >= 3:
+                        run_thought_lens_at_step3.append(len(steps[2].get("thought", "")))
+
+        sim_at_l40 = m["similarity_by_step_layer"].get(step, {}).get(layer, np.nan)
+
+        rows.append({
+            "qid": qid,
+            "cv": m["cv"],
+            "correct_rate": m["correct_rate"],
+            "difficulty": m["difficulty"],
+            "sim_step4_layer40": sim_at_l40,
+            "question_word_count": q_word_count,
+            "question_char_count": q_char_count,
+            "n_context_docs": n_context_docs,
+            "mean_search_first3": float(np.mean(run_search_first3_counts)) if run_search_first3_counts else np.nan,
+            "mean_thought_len_step3": float(np.mean(run_thought_lens_at_step3)) if run_thought_lens_at_step3 else np.nan,
+            "mean_total_thought_len": float(np.mean(run_total_thought_lens)) if run_total_thought_lens else np.nan,
+            "mean_steps": m["mean_steps"],
+        })
+
+    print(f"\n  Collected features for {len(rows)} questions")
+
+    predictors = [
+        ("Hidden state similarity (S4 L40)", "sim_step4_layer40"),
+        ("Question word count", "question_word_count"),
+        ("Question char count", "question_char_count"),
+        ("N context documents", "n_context_docs"),
+        ("Mean Search actions in first 3 steps", "mean_search_first3"),
+        ("Mean thought length at step 3 (chars)", "mean_thought_len_step3"),
+        ("Mean total thought length (chars)", "mean_total_thought_len"),
+        ("Mean step count", "mean_steps"),
+        ("Accuracy (correct rate)", "correct_rate"),
+    ]
+
+    print(f"\n  {'Predictor':>45} {'n':>4} {'r':>8} {'p':>10} {'Sig':>5}")
+    print("  " + "-" * 78)
+
+    predictor_results = {}
+    for label, key in predictors:
+        vals = [(r[key], r["cv"]) for r in rows if not np.isnan(r.get(key, np.nan))]
+        if len(vals) < 5:
+            print(f"  {label:>45} {len(vals):>4}    n/a       n/a")
+            continue
+        xs = np.array([v[0] for v in vals])
+        ys = np.array([v[1] for v in vals])
+        r, p = stats.pearsonr(xs, ys)
+        sig = "*" if p < 0.05 else ""
+        print(f"  {label:>45} {len(vals):>4} {r:>8.4f} {p:>10.6f} {sig:>5}")
+        predictor_results[key] = {"label": label, "r": float(r), "p": float(p),
+                                   "n": len(vals), "significant": bool(p < 0.05)}
+
+    print(f"\n  --- Multiple regression: CV ~ similarity + question_length + accuracy ---")
+    valid_rows = [r for r in rows if not np.isnan(r["sim_step4_layer40"])]
+    if len(valid_rows) >= 10:
+        Y = np.array([r["cv"] for r in valid_rows])
+        X = np.column_stack([
+            [r["sim_step4_layer40"] for r in valid_rows],
+            [r["question_word_count"] for r in valid_rows],
+            [r["correct_rate"] for r in valid_rows],
+            np.ones(len(valid_rows)),
+        ])
+        betas, residuals, rank, sv = np.linalg.lstsq(X, Y, rcond=None)
+        Y_hat = X @ betas
+        ss_res = np.sum((Y - Y_hat) ** 2)
+        ss_tot = np.sum((Y - Y.mean()) ** 2)
+        r_squared = 1 - ss_res / ss_tot if ss_tot > 0 else 0
+
+        n_obs = len(valid_rows)
+        k = 3
+        adj_r_squared = 1 - (1 - r_squared) * (n_obs - 1) / (n_obs - k - 1) if n_obs > k + 1 else r_squared
+
+        se = np.sqrt(ss_res / (n_obs - k - 1)) if n_obs > k + 1 else 0
+        XtX_inv = np.linalg.inv(X.T @ X)
+        se_betas = se * np.sqrt(np.diag(XtX_inv))
+        t_stats = betas / se_betas if np.all(se_betas > 0) else np.zeros_like(betas)
+        p_vals = [2 * (1 - stats.t.cdf(abs(t), df=n_obs - k - 1)) for t in t_stats]
+
+        print(f"  R² = {r_squared:.4f}, Adj R² = {adj_r_squared:.4f}, n = {n_obs}")
+        var_names = ["similarity", "q_word_count", "accuracy", "intercept"]
+        print(f"  {'Variable':>15} {'Beta':>10} {'SE':>10} {'t':>8} {'p':>10}")
+        print("  " + "-" * 55)
+        for name, b, s, t, p in zip(var_names, betas, se_betas, t_stats, p_vals):
+            sig = "*" if p < 0.05 else ""
+            print(f"  {name:>15} {b:>10.4f} {s:>10.4f} {t:>8.3f} {p:>10.6f} {sig}")
+
+        regression_results = {
+            "r_squared": float(r_squared), "adj_r_squared": float(adj_r_squared), "n": n_obs,
+            "coefficients": {name: {"beta": float(b), "se": float(s), "t": float(t), "p": float(p)}
+                             for name, b, s, t, p in zip(var_names, betas, se_betas, t_stats, p_vals)},
+        }
+    else:
+        regression_results = None
+
+    fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+    plot_predictors = [
+        ("sim_step4_layer40", "Hidden State Similarity\n(Step 4, Layer 40)"),
+        ("question_word_count", "Question Word Count"),
+        ("correct_rate", "Accuracy (Correct Rate)"),
+        ("mean_search_first3", "Mean Search Actions\n(First 3 Steps)"),
+        ("mean_total_thought_len", "Mean Total Thought\nLength (chars)"),
+        ("mean_steps", "Mean Step Count"),
+    ]
+    for idx, (key, xlabel) in enumerate(plot_predictors):
+        ax = axes[idx // 3][idx % 3]
+        vals = [(r[key], r["cv"], r["difficulty"]) for r in rows if not np.isnan(r.get(key, np.nan))]
+        if not vals:
+            ax.text(0.5, 0.5, "No data", ha="center", va="center", transform=ax.transAxes)
+            continue
+        xs_h = [v[0] for v in vals if v[2] == "hard"]
+        ys_h = [v[1] for v in vals if v[2] == "hard"]
+        xs_e = [v[0] for v in vals if v[2] == "easy"]
+        ys_e = [v[1] for v in vals if v[2] == "easy"]
+        ax.scatter(xs_h, ys_h, c="#d62728", alpha=0.5, s=30, label="Hard", edgecolors="black", linewidth=0.3)
+        ax.scatter(xs_e, ys_e, c="#1f77b4", alpha=0.5, s=30, label="Easy", edgecolors="black", linewidth=0.3)
+        all_xs = np.array([v[0] for v in vals])
+        all_ys = np.array([v[1] for v in vals])
+        r_val, p_val = stats.pearsonr(all_xs, all_ys)
+        sig = "*" if p_val < 0.05 else ""
+        ax.set_xlabel(xlabel, fontsize=10)
+        ax.set_ylabel("Behavioral CV", fontsize=10)
+        ax.set_title(f"r={r_val:.3f}, p={p_val:.4f}{sig}", fontsize=11,
+                      color="red" if p_val < 0.05 else "black")
+        if idx == 0:
+            ax.legend(fontsize=7, loc="upper right")
+
+    plt.suptitle("Baseline Comparison: What Predicts Behavioral Consistency?", fontsize=14, y=1.02)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "baseline_comparison_step4.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"\n  Saved: baseline_comparison_step4.png")
+
+    result = {
+        "predictors": predictor_results,
+        "regression": regression_results,
+    }
+    with open(OUTPUT_DIR / "baseline_comparison_step4.json", "w") as f:
+        json.dump(result, f, indent=2)
+    print(f"  Saved: baseline_comparison_step4.json")
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════
 
@@ -1064,6 +1449,8 @@ def main():
     clf_results = analysis6_classifier(all_data, metrics)
     loo_results = analysis7_loo_sensitivity(metrics)
     inc_results = analysis8_inconsistent_focus(all_data, metrics)
+    partial_results = analysis9_partial_correlation(metrics)
+    baseline_results = analysis10_baseline_comparison(all_data, metrics)
 
     print("\n" + "=" * 70)
     print("ALL ANALYSES COMPLETE")
