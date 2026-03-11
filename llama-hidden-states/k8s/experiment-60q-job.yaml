@@ -1,0 +1,138 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: experiment-60q
+  namespace: mltraining-dev
+  labels:
+    app: experiment-60q
+    owner: amehta
+    project: research
+    kueue.x-k8s.io/queue-name: research-systems-h200
+    kueue.x-k8s.io/priority-class: medium
+  annotations:
+    owner: amehta@snowflake.com
+    project: research-systems-h200
+spec:
+  backoffLimit: 3
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app: experiment-60q
+        gpu: "true"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: mltraining-dev-sa
+      initContainers:
+        - name: init-results-dir
+          image: 937559181915.dkr.ecr.us-west-2.amazonaws.com/du/playground-generic:1.7.1
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              mkdir -p /results/experiment_60q
+              echo "Results directory initialized at $(date)" > /results/experiment_60q/init.log
+          volumeMounts:
+            - name: results
+              mountPath: /results
+      containers:
+        - name: llama-server
+          image: 937559181915.dkr.ecr.us-west-2.amazonaws.com/du/playground-generic:1.7.1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -ex
+              echo "Installing dependencies..."
+              pip install -q fastapi==0.109.0 uvicorn[standard]==0.27.0 transformers==4.46.0 accelerate==0.34.2 huggingface-hub==0.26.0 pydantic==2.6.0 sentencepiece==0.2.0 protobuf==4.25.2 nnsight==0.3.5
+              echo "Starting server..."
+              cd /app && python -u server.py
+          env:
+            - name: MODEL_NAME
+              value: "meta-llama/Llama-3.1-70B-Instruct"
+            - name: USE_NNSIGHT
+              value: "false"
+            - name: USE_PIPELINE_PARALLEL
+              value: "true"
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: llama-70b-secrets
+                  key: hf-token
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0,1,2,3,4,5,6,7"
+            - name: TRANSFORMERS_CACHE
+              value: "/cache/huggingface"
+            - name: HF_HOME
+              value: "/cache/huggingface"
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: "32"
+              memory: "400Gi"
+              nvidia.com/gpu: "8"
+            limits:
+              cpu: "96"
+              memory: "700Gi"
+              nvidia.com/gpu: "8"
+          volumeMounts:
+            - name: cache-volume
+              mountPath: /cache
+            - name: dshm
+              mountPath: /dev/shm
+            - name: server-code
+              mountPath: /app
+        - name: experiment
+          image: 937559181915.dkr.ecr.us-west-2.amazonaws.com/du/playground-generic:1.7.1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -ex
+              echo "Installing experiment dependencies..."
+              pip install -q requests numpy openai together anthropic httpx
+              echo "Waiting for Llama server to start..."
+              cd /experiment
+              python -u run_60q_experiment.py \
+                --questions /experiment/new_60_questions.json \
+                --output /results/experiment_60q \
+                --resume
+              echo "Experiment complete!"
+              echo "EXPERIMENT_DONE" > /results/experiment_60q/DONE
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+          volumeMounts:
+            - name: results
+              mountPath: /results
+            - name: experiment-code
+              mountPath: /experiment
+      volumes:
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 500Gi
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Gi
+        - name: server-code
+          configMap:
+            name: llama-server-code
+        - name: experiment-code
+          configMap:
+            name: experiment-60q-code
+        - name: results
+          persistentVolumeClaim:
+            claimName: experiment-60q-results
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
