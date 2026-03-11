@@ -713,6 +713,321 @@ def analysis6_classifier(all_data, metrics):
 
 
 # ══════════════════════════════════════════════════════════
+#  ANALYSIS 7: Leave-One-Out Sensitivity (Easy, Step 4, Layer 40)
+# ══════════════════════════════════════════════════════════
+
+def analysis7_loo_sensitivity(metrics):
+    print("\n" + "=" * 70)
+    print("ANALYSIS 7: LEAVE-ONE-OUT SENSITIVITY (Easy Questions, Step 4, Layer 40)")
+    print("=" * 70)
+
+    step, layer = 4, 40
+    easy = [m for m in metrics if m["difficulty"] == "easy"]
+
+    paired = []
+    for m in easy:
+        if step in m["similarity_by_step_layer"] and layer in m["similarity_by_step_layer"][step]:
+            sim = m["similarity_by_step_layer"][step][layer]
+            if not np.isnan(sim):
+                paired.append({"qid": m["qid"], "cv": m["cv"], "sim": sim,
+                               "correct_rate": m["correct_rate"], "category": m.get("category", "")})
+
+    n = len(paired)
+    sims = np.array([p["sim"] for p in paired])
+    cvs = np.array([p["cv"] for p in paired])
+    base_r, base_p = stats.pearsonr(sims, cvs)
+    print(f"\n  Base correlation (n={n}): r={base_r:.4f}, p={base_p:.6f}")
+
+    loo_rs = []
+    loo_ps = []
+    loo_qids = []
+    for i in range(n):
+        mask = np.ones(n, dtype=bool)
+        mask[i] = False
+        r_i, p_i = stats.pearsonr(sims[mask], cvs[mask])
+        loo_rs.append(r_i)
+        loo_ps.append(p_i)
+        loo_qids.append(paired[i]["qid"])
+
+    loo_rs = np.array(loo_rs)
+    loo_ps = np.array(loo_ps)
+
+    print(f"  LOO r range: [{loo_rs.min():.4f}, {loo_rs.max():.4f}]")
+    print(f"  LOO p range: [{loo_ps.min():.6f}, {loo_ps.max():.6f}]")
+    all_sig = np.all(loo_ps < 0.05)
+    print(f"  All LOO p < 0.05: {all_sig}")
+    n_insig = np.sum(loo_ps >= 0.05)
+    print(f"  LOO iterations losing significance: {n_insig}/{n}")
+
+    delta_r = loo_rs - base_r
+    most_influential_idx = np.argmax(np.abs(delta_r))
+    print(f"\n  Most influential question: {paired[most_influential_idx]['qid']}")
+    print(f"    Removing it: r={loo_rs[most_influential_idx]:.4f} (delta={delta_r[most_influential_idx]:+.4f})")
+    print(f"    Its CV={paired[most_influential_idx]['cv']:.4f}, sim={paired[most_influential_idx]['sim']:.4f}, "
+          f"correct_rate={paired[most_influential_idx]['correct_rate']:.1f}")
+
+    top5_idx = np.argsort(np.abs(delta_r))[-5:][::-1]
+    print(f"\n  Top 5 most influential (by |delta r|):")
+    print(f"  {'QID':>28} {'CV':>6} {'Sim':>6} {'CR':>5} {'Cat':>20} {'LOO r':>8} {'delta':>8}")
+    print("  " + "-" * 90)
+    for idx in top5_idx:
+        p = paired[idx]
+        print(f"  {p['qid']:>28} {p['cv']:>6.3f} {p['sim']:>6.4f} {p['correct_rate']:>5.1f} "
+              f"{p['category']:>20} {loo_rs[idx]:>8.4f} {delta_r[idx]:>+8.4f}")
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    ax = axes[0]
+    ax.hist(loo_rs, bins=25, color="#1f77b4", edgecolor="black", alpha=0.8)
+    ax.axvline(x=base_r, color="red", linewidth=2, label=f"Base r={base_r:.3f}")
+    ax.axvline(x=0, color="black", linewidth=0.5, linestyle="--")
+    sig_threshold_r = loo_rs[np.argmin(np.abs(loo_ps - 0.05))]
+    ax.set_xlabel("Pearson r (with one question removed)", fontsize=11)
+    ax.set_ylabel("Count", fontsize=11)
+    ax.set_title(f"LOO Sensitivity: Easy Questions at Step 4, Layer 40\n"
+                 f"n={n}, base r={base_r:.3f}, range [{loo_rs.min():.3f}, {loo_rs.max():.3f}]", fontsize=12)
+    ax.legend(fontsize=10)
+
+    ax = axes[1]
+    sorted_idx = np.argsort(delta_r)
+    colors = ["#d62728" if loo_ps[i] >= 0.05 else "#1f77b4" for i in sorted_idx]
+    ax.barh(range(n), delta_r[sorted_idx], color=colors, edgecolor="none", height=1.0)
+    ax.set_xlabel("Change in r when removed", fontsize=11)
+    ax.set_ylabel("Question (sorted)", fontsize=11)
+    ax.set_title("Per-question influence on r\n(red = removal breaks significance)", fontsize=12)
+    ax.axvline(x=0, color="black", linewidth=0.5)
+    ax.set_yticks([])
+
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "loo_sensitivity_easy_step4_l40.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"\n  Saved: loo_sensitivity_easy_step4_l40.png")
+
+    result = {
+        "step": step, "layer": layer, "n_easy": n,
+        "base_r": float(base_r), "base_p": float(base_p),
+        "loo_r_min": float(loo_rs.min()), "loo_r_max": float(loo_rs.max()),
+        "loo_r_mean": float(loo_rs.mean()), "loo_r_std": float(loo_rs.std()),
+        "all_loo_significant": bool(all_sig), "n_loo_insignificant": int(n_insig),
+        "robust": bool(all_sig),
+        "most_influential": {
+            "qid": paired[most_influential_idx]["qid"],
+            "cv": float(paired[most_influential_idx]["cv"]),
+            "sim": float(paired[most_influential_idx]["sim"]),
+            "correct_rate": float(paired[most_influential_idx]["correct_rate"]),
+            "loo_r": float(loo_rs[most_influential_idx]),
+            "delta_r": float(delta_r[most_influential_idx]),
+        },
+        "top5_influential": [
+            {"qid": paired[i]["qid"], "cv": float(paired[i]["cv"]),
+             "sim": float(paired[i]["sim"]), "correct_rate": float(paired[i]["correct_rate"]),
+             "category": paired[i]["category"],
+             "loo_r": float(loo_rs[i]), "delta_r": float(delta_r[i])}
+            for i in top5_idx
+        ],
+        "per_question": [
+            {"qid": paired[i]["qid"], "loo_r": float(loo_rs[i]), "loo_p": float(loo_ps[i]),
+             "delta_r": float(delta_r[i])}
+            for i in range(n)
+        ],
+    }
+    with open(OUTPUT_DIR / "loo_sensitivity_easy_step4_l40.json", "w") as f:
+        json.dump(result, f, indent=2, default=lambda o: bool(o) if isinstance(o, np.bool_) else o)
+    print(f"  Saved: loo_sensitivity_easy_step4_l40.json")
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════
+#  ANALYSIS 8: Inconsistent Questions Focused Analysis
+# ══════════════════════════════════════════════════════════
+
+def analysis8_inconsistent_focus(all_data, metrics):
+    print("\n" + "=" * 70)
+    print("ANALYSIS 8: INCONSISTENT QUESTIONS FOCUSED ANALYSIS (n=12)")
+    print("=" * 70)
+
+    step = 4
+    cats = {"consistent-correct": [], "consistent-wrong": [], "inconsistent": []}
+    for m in metrics:
+        cat = m.get("category", "")
+        if cat in cats:
+            cats[cat].append(m)
+
+    for cat, qs in cats.items():
+        print(f"  {cat}: {len(qs)} questions")
+
+    target_layers = [32, 40, 48, 56, 64, 72, 80]
+
+    print(f"\n  --- Mean activation similarity at step {step} by category ---")
+    print(f"  {'Layer':>5}  {'Cons-Correct':>14} {'Cons-Wrong':>14} {'Inconsistent':>14}  "
+          f"{'CC vs CW':>10} {'CC vs Inc':>10} {'CW vs Inc':>10}")
+    print("  " + "-" * 95)
+
+    cat_sims = {cat: {l: [] for l in target_layers} for cat in cats}
+    for cat, qs in cats.items():
+        for m in qs:
+            qid = m["qid"]
+            if qid not in all_data:
+                continue
+            runs = all_data[qid]["runs"]
+            for layer in target_layers:
+                vectors = []
+                for run in runs:
+                    hs = run["hidden_states"].get(step)
+                    if hs is not None and len(hs) > layer:
+                        vectors.append(hs[layer])
+                if len(vectors) >= 2:
+                    cat_sims[cat][layer].append(compute_pairwise_cosine_similarity(vectors))
+
+    layer_stats = {}
+    for layer in target_layers:
+        cc_vals = np.array(cat_sims["consistent-correct"][layer])
+        cw_vals = np.array(cat_sims["consistent-wrong"][layer])
+        inc_vals = np.array(cat_sims["inconsistent"][layer])
+
+        cc_mean = np.mean(cc_vals) if len(cc_vals) > 0 else np.nan
+        cw_mean = np.mean(cw_vals) if len(cw_vals) > 0 else np.nan
+        inc_mean = np.mean(inc_vals) if len(inc_vals) > 0 else np.nan
+        cc_std = np.std(cc_vals) if len(cc_vals) > 0 else np.nan
+        cw_std = np.std(cw_vals) if len(cw_vals) > 0 else np.nan
+        inc_std = np.std(inc_vals) if len(inc_vals) > 0 else np.nan
+
+        tests = {}
+        if len(cc_vals) >= 2 and len(cw_vals) >= 2:
+            t, p = stats.mannwhitneyu(cc_vals, cw_vals, alternative="two-sided")
+            tests["cc_vs_cw"] = {"U": float(t), "p": float(p)}
+        if len(cc_vals) >= 2 and len(inc_vals) >= 2:
+            t, p = stats.mannwhitneyu(cc_vals, inc_vals, alternative="two-sided")
+            tests["cc_vs_inc"] = {"U": float(t), "p": float(p)}
+        if len(cw_vals) >= 2 and len(inc_vals) >= 2:
+            t, p = stats.mannwhitneyu(cw_vals, inc_vals, alternative="two-sided")
+            tests["cw_vs_inc"] = {"U": float(t), "p": float(p)}
+
+        cc_str = f"{cc_mean:.4f}±{cc_std:.4f}" if not np.isnan(cc_mean) else "n/a"
+        cw_str = f"{cw_mean:.4f}±{cw_std:.4f}" if not np.isnan(cw_mean) else "n/a"
+        inc_str = f"{inc_mean:.4f}±{inc_std:.4f}" if not np.isnan(inc_mean) else "n/a"
+        cc_cw_p = f"{tests['cc_vs_cw']['p']:.4f}" if "cc_vs_cw" in tests else "n/a"
+        cc_inc_p = f"{tests['cc_vs_inc']['p']:.4f}" if "cc_vs_inc" in tests else "n/a"
+        cw_inc_p = f"{tests['cw_vs_inc']['p']:.4f}" if "cw_vs_inc" in tests else "n/a"
+
+        print(f"  {layer:>5}  {cc_str:>14} {cw_str:>14} {inc_str:>14}  "
+              f"{cc_cw_p:>10} {cc_inc_p:>10} {cw_inc_p:>10}")
+
+        layer_stats[layer] = {
+            "consistent_correct": {"mean": float(cc_mean), "std": float(cc_std), "n": len(cc_vals)},
+            "consistent_wrong": {"mean": float(cw_mean), "std": float(cw_std), "n": len(cw_vals)},
+            "inconsistent": {"mean": float(inc_mean), "std": float(inc_std), "n": len(inc_vals)},
+            "tests": tests,
+        }
+
+    print(f"\n  --- CV distribution by category ---")
+    for cat_name, qs in cats.items():
+        cvs = [m["cv"] for m in qs]
+        if cvs:
+            print(f"  {cat_name:>20}: mean CV={np.mean(cvs):.4f}, std={np.std(cvs):.4f}, "
+                  f"range=[{min(cvs):.4f}, {max(cvs):.4f}]")
+
+    print(f"\n  --- Inconsistent question details ---")
+    print(f"  {'QID':>28} {'Diff':>5} {'CR':>5} {'CV':>7} {'Sim@L40':>8} {'Steps':>6}")
+    print("  " + "-" * 65)
+    inc_details = []
+    for m in cats["inconsistent"]:
+        sim_l40 = m["similarity_by_step_layer"].get(step, {}).get(40, np.nan)
+        print(f"  {m['qid']:>28} {m['difficulty']:>5} {m['correct_rate']:>5.2f} {m['cv']:>7.4f} "
+              f"{sim_l40:>8.4f} {m['mean_steps']:>6.1f}")
+        inc_details.append({
+            "qid": m["qid"], "difficulty": m["difficulty"],
+            "correct_rate": float(m["correct_rate"]), "cv": float(m["cv"]),
+            "sim_step4_layer40": float(sim_l40) if not np.isnan(sim_l40) else None,
+            "mean_steps": float(m["mean_steps"]),
+        })
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+
+    ax = axes[0]
+    layer_plot = 40
+    for cat_name, color, marker in [
+        ("consistent-correct", "#2ca02c", "o"),
+        ("consistent-wrong", "#d62728", "s"),
+        ("inconsistent", "#ff7f0e", "D"),
+    ]:
+        qs = cats[cat_name]
+        cvs = [m["cv"] for m in qs]
+        sims_plot = [m["similarity_by_step_layer"].get(step, {}).get(layer_plot, np.nan) for m in qs]
+        valid = [(c, s) for c, s in zip(cvs, sims_plot) if not np.isnan(s)]
+        if valid:
+            ax.scatter([v[1] for v in valid], [v[0] for v in valid],
+                       c=color, marker=marker, s=50, alpha=0.7, label=f"{cat_name} (n={len(valid)})",
+                       edgecolors="black", linewidth=0.5)
+    ax.set_xlabel("Activation Similarity (Step 4, Layer 40)", fontsize=11)
+    ax.set_ylabel("Behavioral CV", fontsize=11)
+    ax.set_title("Similarity vs CV by Consistency Category", fontsize=12)
+    ax.legend(fontsize=8, loc="upper right")
+
+    ax = axes[1]
+    positions = []
+    data_for_box = []
+    labels_for_box = []
+    cat_colors = {"consistent-correct": "#2ca02c", "consistent-wrong": "#d62728", "inconsistent": "#ff7f0e"}
+    for i, (cat_name, short) in enumerate([("consistent-correct", "CC"), ("consistent-wrong", "CW"), ("inconsistent", "Inc")]):
+        vals = cat_sims[cat_name].get(40, [])
+        if vals:
+            data_for_box.append(vals)
+            labels_for_box.append(f"{short}\n(n={len(vals)})")
+            positions.append(i)
+    bp = ax.boxplot(data_for_box, positions=positions, patch_artist=True, widths=0.6)
+    cat_keys = ["consistent-correct", "consistent-wrong", "inconsistent"]
+    for patch, cat_name in zip(bp["boxes"], cat_keys[:len(data_for_box)]):
+        patch.set_facecolor(cat_colors[cat_name])
+        patch.set_alpha(0.6)
+    ax.set_xticks(positions)
+    ax.set_xticklabels(labels_for_box, fontsize=10)
+    ax.set_ylabel("Activation Similarity (Step 4, Layer 40)", fontsize=11)
+    ax.set_title("Similarity Distribution by Category", fontsize=12)
+
+    ax = axes[2]
+    for cat_name, color, marker in [
+        ("consistent-correct", "#2ca02c", "o"),
+        ("consistent-wrong", "#d62728", "s"),
+        ("inconsistent", "#ff7f0e", "D"),
+    ]:
+        qs = cats[cat_name]
+        crs = [m["correct_rate"] for m in qs]
+        cvs = [m["cv"] for m in qs]
+        ax.scatter(crs, cvs, c=color, marker=marker, s=50, alpha=0.7,
+                   label=f"{cat_name} (n={len(qs)})", edgecolors="black", linewidth=0.5)
+    ax.set_xlabel("Correct Rate (across 10 runs)", fontsize=11)
+    ax.set_ylabel("Behavioral CV (step count variability)", fontsize=11)
+    ax.set_title("Correct Rate vs CV by Category", fontsize=12)
+    ax.legend(fontsize=8)
+
+    plt.suptitle("Inconsistent Questions: Representational Signatures (Step 4)", fontsize=14, y=1.02)
+    plt.tight_layout()
+    plt.savefig(OUTPUT_DIR / "inconsistent_focus_step4.png", dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"\n  Saved: inconsistent_focus_step4.png")
+
+    result = {
+        "step": step,
+        "n_by_category": {k: len(v) for k, v in cats.items()},
+        "layer_stats": {str(k): v for k, v in layer_stats.items()},
+        "inconsistent_details": inc_details,
+        "cv_by_category": {
+            cat_name: {"mean": float(np.mean([m["cv"] for m in qs])),
+                       "std": float(np.std([m["cv"] for m in qs])),
+                       "n": len(qs)}
+            for cat_name, qs in cats.items() if qs
+        },
+    }
+    with open(OUTPUT_DIR / "inconsistent_focus_step4.json", "w") as f:
+        json.dump(result, f, indent=2)
+    print(f"  Saved: inconsistent_focus_step4.json")
+
+    return result
+
+
+# ══════════════════════════════════════════════════════════
 #  MAIN
 # ══════════════════════════════════════════════════════════
 
@@ -747,6 +1062,8 @@ def main():
     cat_counts = analysis4_consistency_categories(metrics)
     step_rs, step_ps = analysis5_step_progression(metrics)
     clf_results = analysis6_classifier(all_data, metrics)
+    loo_results = analysis7_loo_sensitivity(metrics)
+    inc_results = analysis8_inconsistent_focus(all_data, metrics)
 
     print("\n" + "=" * 70)
     print("ALL ANALYSES COMPLETE")
