@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen-hf-cache
+  namespace: mltraining-dev
+  labels:
+    owner: amehta
+    project: research
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 200Gi

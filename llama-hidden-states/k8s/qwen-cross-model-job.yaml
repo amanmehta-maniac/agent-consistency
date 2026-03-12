@@ -46,12 +46,12 @@ spec:
             - |
               set -ex
               echo "Installing dependencies..."
-              pip install -q fastapi==0.109.0 uvicorn[standard]==0.27.0 transformers==4.46.0 accelerate==0.34.2 huggingface-hub==0.26.0 pydantic==2.6.0 sentencepiece==0.2.0 protobuf==4.25.2
-              echo "Starting Qwen 2.5 72B server..."
+              pip install -q fastapi==0.109.0 uvicorn[standard]==0.27.0 transformers==4.46.0 accelerate==0.34.2 huggingface-hub==0.26.0 pydantic==2.6.0 sentencepiece==0.2.0 protobuf==4.25.2 autoawq==0.2.7
+              echo "Starting Qwen 2.5 72B-AWQ server..."
               cd /app && python -u server.py
           env:
             - name: MODEL_NAME
-              value: "Qwen/Qwen2.5-72B-Instruct"
+              value: "Qwen/Qwen2.5-72B-Instruct-AWQ"
             - name: USE_NNSIGHT
               value: "false"
             - name: USE_PIPELINE_PARALLEL
@@ -67,6 +67,13 @@ spec:
               value: "/cache/huggingface"
             - name: HF_HOME
               value: "/cache/huggingface"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 60
           ports:
             - containerPort: 8000
               name: http
@@ -117,8 +124,8 @@ spec:
               mountPath: /experiment
       volumes:
         - name: cache-volume
-          emptyDir:
-            sizeLimit: 500Gi
+          persistentVolumeClaim:
+            claimName: qwen-hf-cache
         - name: dshm
           emptyDir:
             medium: Memory
