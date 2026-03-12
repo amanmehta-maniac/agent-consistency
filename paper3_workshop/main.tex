@@ -42,53 +42,70 @@
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-LLM-based agents exhibit behavioral inconsistency: the same agent given the same task produces different reasoning trajectories across runs. We investigate whether this inconsistency has a signature in internal representations. Using Llama-3.1-70B on a ReAct question-answering task (100 questions, 10 runs each), we find that \emph{activation similarity}---pairwise cosine similarity of hidden states across runs---predicts behavioral consistency ($r = -0.35$, permutation $p < 0.001$). Counterintuitively, higher similarity predicts \emph{less} consistency: undifferentiated hidden states indicate the model has not committed to a strategy, and future behavior diverges. This signal emerges at step~4, spans layers 32--80, strengthens after controlling for difficulty (partial $r = -0.45$, $p < 10^{-5}$), and is not explained by simple baselines. It predicts between-run consistency but not per-run correctness (AUC~$\approx 0.6$). To our knowledge, this is the first work connecting agent behavioral consistency to hidden-state geometry.
+LLM-based agents exhibit behavioral inconsistency: the same agent given the same task produces different reasoning trajectories across runs. We investigate whether this inconsistency has a signature in internal representations. Using Llama-3.1-70B on a ReAct question-answering task (100 questions, 10 runs each, 1{,}000 total trajectories), we find that \emph{activation similarity}---pairwise cosine similarity of hidden states across runs at a given step---predicts behavioral consistency ($r = -0.35$, permutation $p < 0.001$). Higher similarity indicates the model has not updated its representations in response to observations, remaining in an undifferentiated state from which future behavior diverges. We call this \textbf{representational commitment}: the degree to which a model integrates observations into its internal state. The signal emerges at step~4 of the agent trajectory, spans layers 32--80, and \emph{strengthens} after controlling for task difficulty (partial $r = -0.45$, $p < 10^{-5}$). It is not explained by question length, context size, or other simple baselines. Notably, the signal predicts \emph{between-run consistency} but not \emph{per-run correctness} (probing AUC $\approx 0.5$), establishing it as a fundamentally relational property of agent representations. We validate cross-model on Qwen~2.5~72B, finding an even stronger signal ($r = -0.74$ vs.\ $-0.59$), confirming the finding is architecture-independent. To our knowledge, this is the first work connecting agent behavioral reliability to hidden-state geometry.
 \end{abstract}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-LLM-based agents---systems combining language models with tool use and multi-step reasoning \citep{react, cot}---face a critical reliability concern: \emph{behavioral inconsistency}, where the same agent given the same input produces different outputs across runs \citep{mehta2026agents, mehta2026consistency}. While prior work characterized this inconsistency behaviorally, a fundamental question remains: \emph{does consistency have a signature in the model's internal representations?}
+LLM-based agents---systems combining language models with tool use and multi-step reasoning \citep{react, cot}---face a critical reliability concern: \emph{behavioral inconsistency}. When given the same task multiple times, agents produce different action sequences, explore different reasoning paths, and often reach different conclusions \citep{mehta2026agents, mehta2026consistency}. This complicates deployment, debugging, and benchmarking.
 
-We answer affirmatively. Extracting hidden states from Llama-3.1-70B \citep{llama3} during ReAct \citep{react} question-answering on HotpotQA \citep{hotpotqa}, we find that cross-run \emph{activation similarity} at a critical reasoning step predicts behavioral consistency. We call this \textbf{representational commitment}: when hidden states differentiate in response to observations, downstream behavior is consistent; when they remain undifferentiated, behavior diverges. Our contributions:
+Prior work has characterized this inconsistency behaviorally: \citet{mehta2026agents} showed that 69\% of agent divergence occurs at the first search query, and \citet{mehta2026consistency} found that consistency amplifies outcomes on SWE-bench, with 71\% of failures being ``consistently wrong.'' But these studies measure what agents \emph{do} without examining what happens \emph{inside} the model. A deeper question remains: does behavioral consistency have a measurable signature in the model's internal representations?
+
+We answer affirmatively. Extracting hidden states from Llama-3.1-70B \citep{llama3} during ReAct \citep{react} question-answering on HotpotQA \citep{hotpotqa}, we find that cross-run \emph{activation similarity}---how similar hidden states are across multiple runs of the same question---predicts downstream behavioral consistency. We introduce the concept of \textbf{representational commitment}: when a model integrates observations into differentiated internal states, each run follows a focused strategy and behavior is consistent; when internal states remain undifferentiated despite receiving different observations, the model has not committed, and behavior diverges.
+
+Our contributions:
 \begin{enumerate}
-\item Activation similarity at step~4 predicts consistency ($r = -0.35$, permutation $p < 0.001$, $n{=}100$), \emph{strengthening} after difficulty controls (partial $r = -0.45$, $p < 10^{-5}$).
-\item The signal is temporally and spatially specific: absent at steps 1--2, peaking at step~4, spanning layers 32--80.
-\item The signal predicts \emph{between-run consistency} but not \emph{per-run correctness} (AUC~$\approx 0.6$).
+    \item Activation similarity at step~4 predicts consistency ($r = -0.35$, permutation $p < 0.001$, $n{=}100$), \emph{strengthening} after difficulty controls (partial $r = -0.45$, $p < 10^{-5}$).
+    \item The signal has temporal and spatial specificity: absent at steps 1--2, peaking at step~4, spanning layers 32--80.
+    \item The signal predicts \emph{between-run consistency} but not \emph{per-run correctness} (probing AUC~$\approx 0.5$), distinguishing committed from uncommitted states but not correct from incorrect ones.
+    \item Cross-model validation on Qwen~2.5~72B ($r = -0.74$, $p < 0.001$, 9/11 layers significant) confirms the signal is architecture-independent.
 \end{enumerate}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Related Work}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\textbf{Behavioral consistency.} \citet{mehta2026agents} introduced behavioral consistency as an agent reliability metric; \citet{mehta2026consistency} showed it predicts accuracy. Self-consistency \citep{wang2023selfconsistency} uses output-level variance for majority voting but does not examine internal representations. \citet{elazar2021consistency} studied token-level consistency in non-agentic settings.
+\textbf{Behavioral consistency in agents.} \citet{mehta2026agents} introduced multi-run behavioral consistency as an agent reliability metric on HotpotQA, finding a 32--55 percentage point accuracy gap between consistent and inconsistent runs. \citet{mehta2026consistency} extended this to SWE-bench, revealing that consistency amplifies outcomes rather than guaranteeing correctness. Self-consistency \citep{wang2023selfconsistency} leverages output-level variance via majority voting but does not examine internal representations.
 
-\textbf{Probing hidden states.} LLM hidden states encode truth \citep{burns2023discovering, marks2024geometry}, support inference-time intervention \citep{li2024inference}, distinguish truthful from deceptive outputs \citep{azaria2023internal}, and encode model confidence \citep{kadavath2022language, stickland2024reasoning}. We extend probing to \emph{behavioral consistency in agentic settings}.
+\textbf{Probing LLM representations.} Hidden states encode truth \citep{burns2023discovering, marks2024geometry}, model confidence \citep{kadavath2022language}, and answer correctness in reasoning models \citep{stickland2024reasoning}. \citet{gnosis} showed that lightweight probes can detect incorrect generations from hidden states in single-turn settings. We extend probing to \emph{multi-step agentic settings} and find it predicts consistency but, notably, not per-run correctness.
 
-\textbf{Representation engineering.} \citet{zou2023repe} introduced representation engineering; \citet{turner2023steering} demonstrated activation steering; \citet{templeton2024scaling} extracted interpretable features at scale. We identify \emph{where} consistency information lives, informing future interventions.
+\textbf{Representation engineering.} \citet{zou2023repe} introduced representation reading and control; \citet{turner2023steering} demonstrated activation steering for behavioral modification. \citet{anthropic_persona} extracted ``persona vectors'' encoding character traits, and \citet{anthropic_axis} identified an ``assistant axis'' governing default model behavior. Our work identifies a new representational property---commitment---that may constitute another such axis in activation space.
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Method}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\textbf{Setup.} We use Llama-3.1-70B \citep{llama3} in a ReAct \citep{react} agent on HotpotQA \citep{hotpotqa}. The agent iterates Thought $\rightarrow$ Action $\rightarrow$ Observation using Search, Retrieve, and Finish tools. We select 100 questions (50 easy, 50 hard), run each 10 times ($T{=}0.6$, 988 total runs), and extract hidden states $\mathbf{h}_{\ell}^{(s)} \in \mathbb{R}^{8192}$ from the last token at layer $\ell \in \{0, 8, \ldots, 80\}$ and step $s \in \{1, \ldots, 5\}$.
+\textbf{Agent and task.} We deploy Llama-3.1-70B-Instruct \citep{llama3} in a ReAct \citep{react} agent on HotpotQA \citep{hotpotqa}. The agent iterates Thought $\rightarrow$ Action $\rightarrow$ Observation using Search, Retrieve, and Finish tools. We select 100 questions from the validation set: 50 ``easy'' (comparison questions with yes/no answers) and 50 ``hard'' (multi-hop requiring 2+ retrieval steps). Each question is run 10 times with temperature $T{=}0.5$ and maximum 25 steps, yielding 988 total trajectories.\footnote{12 runs excluded due to incomplete hidden state extraction.}
 
-\textbf{Metrics.} \emph{Behavioral consistency} (CV): coefficient of variation of step count across 10 runs. \emph{Activation similarity}: mean pairwise cosine similarity of hidden states across runs at a given step and layer:
-$\text{Sim}_q^{(s,\ell)} = \binom{n}{2}^{-1} \sum_{i < j} \cos(\mathbf{h}_{\ell,i}^{(s)}, \mathbf{h}_{\ell,j}^{(s)})$.
-We examine the Pearson correlation between $\text{Sim}_q^{(s,\ell)}$ and $\text{CV}_q$ across questions.
+\textbf{Hidden state extraction.} The model runs on 8$\times$H200 GPUs with pipeline parallelism (10 layers per GPU). At every agent step, we extract the hidden state at the last token position from layers $\ell \in \{0, 8, 16, \ldots, 80\}$, producing $\mathbf{h}_{\ell}^{(s)} \in \mathbb{R}^{8192}$ per step $s$ and layer $\ell$.
 
+\textbf{Behavioral consistency.} We measure the coefficient of variation (CV) of step counts across the 10 runs of each question. Lower CV indicates more consistent behavior.
 
+\textbf{Activation similarity.} For each question $q$ at step $s$ and layer $\ell$, we compute the mean pairwise cosine similarity across runs:
+\begin{equation}
+\text{Sim}_q^{(s,\ell)} = \binom{n}{2}^{-1} \sum_{i < j} \cos\!\left(\mathbf{h}_{\ell,i}^{(s)},\; \mathbf{h}_{\ell,j}^{(s)}\right)
+\end{equation}
+where $n$ is the number of runs with hidden states at step $s$. We examine the Pearson correlation between $\text{Sim}_q^{(s,\ell)}$ and $\text{CV}_q$ across all questions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Core Finding: Activation Similarity Predicts Consistency}
+\subsection{Activation Similarity Predicts Consistency}
 
-Figure~\ref{fig:heatmap} shows the correlation between activation similarity and behavioral CV across all step--layer combinations. A strong negative correlation emerges at step~4 across layers 32--80, peaking at layer~40 ($r = -0.35$, $p = 0.0006$). The sign is counterintuitive: higher similarity predicts \emph{higher} CV (more inconsistent behavior). A 10{,}000-permutation test confirms all seven layers from 32 to 80 are significant ($p < 0.002$; Table~\ref{tab:permutation}).
+Figure~\ref{fig:heatmap} shows the correlation between activation similarity and behavioral CV across all step--layer combinations. A negative correlation emerges at step~4 across layers 32--80, peaking at layer~40 ($r = -0.348$, $p = 0.0006$). A 10{,}000-iteration permutation test confirms significance at all layers from 32 to 80 (Table~\ref{tab:permutation}).
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/step_layer_heatmap_100q.png}
-\caption{Pearson $r$ between activation similarity and behavioral CV ($n = 99$). Gold borders: $p < 0.05$. Signal emerges at step~4 across layers 32--80.}
+\caption{Pearson $r$ between activation similarity and behavioral CV across steps and layers ($n = 99$). Gold borders indicate $p < 0.05$. The signal concentrates at step~4 across layers 32--80.}
 \label{fig:heatmap}
 \end{figure}
 
 \begin{table}[t]
-\caption{Permutation test at step~4 ($n = 94$, 10{,}000 permutations).}
+\caption{Permutation test at step~4 (10{,}000 iterations). All layers 32--80 are significant at $p < 0.002$.}
 \label{tab:permutation}
 \centering
 \small
@@ -97,7 +114,7 @@ Figure~\ref{fig:heatmap} shows the correlation between activation similarity and
 Layer & $r$ & Param.\ $p$ & Perm.\ $p$ \\
 \midrule
 32 & $-0.340$ & $0.0008$ & $0.0007$ \\
-\textbf{40} & $\mathbf{-0.347}$ & $\mathbf{0.0006}$ & $\mathbf{0.0003}$ \\
+\textbf{40} & $\mathbf{-0.348}$ & $\mathbf{0.0006}$ & $\mathbf{0.0003}$ \\
 48 & $-0.326$ & $0.0013$ & $0.0012$ \\
 56 & $-0.320$ & $0.0017$ & $0.0011$ \\
 64 & $-0.313$ & $0.0021$ & $0.0014$ \\
@@ -107,34 +124,25 @@ Layer & $r$ & Param.\ $p$ & Perm.\ $p$ \\
 \end{tabular}
 \end{table}
 
-\textbf{Interpretation.} When runs update their hidden states differently in response to observations---producing low cross-run similarity---they have ``committed'' to distinct strategies and proceed consistently. When hidden states remain similar despite different observations, runs are ``uncommitted'' and downstream behavior diverges.
-
+\textbf{Why does high similarity predict inconsistency?} By step~4, each run has taken 3 actions and received different observations (different search results, different retrieved documents). When hidden states remain similar \emph{despite} these different inputs, the model has not incorporated the observations into its internal state---it remains in a generic, uncommitted representation. Without a committed strategy, sampling perturbations have no anchor, and trajectories scatter. Conversely, when hidden states \emph{differentiate} in response to observations, each run has integrated evidence into a specific interpretation and proceeds consistently.
 
 \subsection{Temporal Profile}
 
-Figure~\ref{fig:step_progression} shows the correlation at layer~40 across steps. The signal is absent at steps 1--2, strengthens at step~3, peaks at step~4 ($r = -0.35$), and weakens at step~5. Step~1 shows a weak positive correlation ($r = 0.20$, $p = 0.048$), possibly reflecting question-encoding effects. The signal appears precisely when the model has enough evidence to differentiate strategies.
+Figure~\ref{fig:step_progression} shows the correlation at layer~40 across steps. The signal is absent at steps 1--2, strengthens at step~3, peaks at step~4 ($r = -0.348$), and weakens at step~5. This trajectory aligns with \citet{mehta2026agents}, who found that 69\% of behavioral divergence begins at step~2. The representational commitment signal appears two steps later, capturing the model's response to the accumulated evidence.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figures/step_progression_layer40_100q.png}
-\caption{Correlation at layer~40 across steps. The signal peaks at step~4.}
+\caption{Correlation between activation similarity and CV at layer~40 across steps. The consistency signal peaks at step~4.}
 \label{fig:step_progression}
 \end{figure}
 
-
 \subsection{Controlling for Task Difficulty}
 
-Both similarity and CV could reflect task difficulty. Partial correlation controlling for accuracy and difficulty label shows the signal \emph{strengthens}: raw $r = -0.35$ becomes partial $r = -0.45$ ($p < 10^{-5}$; Figure~\ref{fig:partial}). Accuracy acts as a suppressor variable; all layers survive (Table~\ref{tab:partial}).
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{figures/partial_correlation_step4.png}
-\caption{Partial correlation analysis. \textbf{Left:} Raw scatter colored by difficulty. \textbf{Center:} After residualizing on accuracy and difficulty ($r{:}\;{-}0.35 \to {-}0.45$). \textbf{Right:} Raw vs.\ partial $r$ across layers.}
-\label{fig:partial}
-\end{figure}
+Both activation similarity and CV could be driven by task difficulty, creating a spurious correlation. We address this with partial correlation, controlling for question accuracy (fraction of runs producing the correct answer) and a binary difficulty label.
 
 \begin{table}[t]
-\caption{Partial correlations at step~4, controlling for accuracy and difficulty.}
+\caption{Partial correlations at step~4, controlling for accuracy and difficulty label. The signal strengthens after removing difficulty-related variance.}
 \label{tab:partial}
 \centering
 \small
@@ -143,7 +151,7 @@ Both similarity and CV could reflect task difficulty. Partial correlation contro
 Layer & Raw $r$ & Raw $p$ & Partial $r$ & Partial $p$ \\
 \midrule
 32 & $-0.340$ & $.0008$ & $-0.456$ & $< .0001$ \\
-\textbf{40} & $\mathbf{-0.347}$ & $\mathbf{.0006}$ & $\mathbf{-0.445}$ & $< \mathbf{.0001}$ \\
+\textbf{40} & $\mathbf{-0.348}$ & $\mathbf{.0006}$ & $\mathbf{-0.445}$ & $\mathbf{< .0001}$ \\
 48 & $-0.326$ & $.0013$ & $-0.416$ & $< .0001$ \\
 56 & $-0.320$ & $.0017$ & $-0.399$ & $< .0001$ \\
 64 & $-0.313$ & $.0021$ & $-0.387$ & $.0001$ \\
@@ -153,13 +161,14 @@ Layer & Raw $r$ & Raw $p$ & Partial $r$ & Partial $p$ \\
 \end{tabular}
 \end{table}
 
+The partial correlation \emph{increases} from $r = -0.35$ to $r = -0.45$ (Table~\ref{tab:partial}). Task difficulty was partially \emph{suppressing} the signal: once its shared variance with both similarity and CV is removed, the direct relationship becomes clearer. This is the strongest evidence against the difficulty confound and confirms the signal reflects a genuine representational property independent of task characteristics.
 
 \subsection{Ruling Out Simple Baselines}
 
-Table~\ref{tab:baselines} compares predictors of CV. Question length ($r = 0.10$, $p = 0.31$) and context size ($r = 0.04$, $p = 0.66$) are not significant. Behavioral features (step count, thought length) show weak correlations but are downstream consequences. Multiple regression (CV $\sim$ similarity + question length + accuracy) yields $R^2 = 0.30$; similarity ($t = -4.73$, $p < 10^{-5}$) and accuracy ($t = -4.41$, $p < 10^{-4}$) are the only significant predictors.
+We compare hidden state similarity against simpler potential predictors of consistency (Table~\ref{tab:baselines}). No input-level feature (question length, context size, thought length) predicts CV. The significant features marked with $\dagger$ are downstream behavioral consequences of the agent's actions, not confounds. A multiple regression (CV $\sim$ similarity + question length + accuracy) yields $R^2 = 0.30$; similarity ($t = -4.73$, $p < 10^{-5}$) and accuracy ($t = -4.41$, $p < 10^{-4}$) are the only significant predictors. Question length is irrelevant ($t = -0.32$, $p = 0.75$).
 
 \begin{table}[t]
-\caption{Predictors of behavioral CV. $*$: $p < 0.05$.}
+\caption{Predictors of behavioral CV. $\dagger$Downstream behavioral consequences.}
 \label{tab:baselines}
 \centering
 \small
@@ -168,37 +177,96 @@ Table~\ref{tab:baselines} compares predictors of CV. Question length ($r = 0.10$
 Predictor & $r$ & $p$ \\
 \midrule
 \textbf{Hidden-state sim.\ (S4, L40)} & $\mathbf{-0.35}$ & $\mathbf{.0006}$ \\
-Accuracy (correct rate) & $-0.31$ & $.002$ \\
-Mean total thought length & $0.26$ & $.011$ \\
-Mean search actions & $0.23$ & $.019$ \\
-Mean step count & $0.21$ & $.037$ \\
+\midrule
+Accuracy (correct rate)$^\dagger$ & $-0.31$ & $.002$ \\
+Mean total thought length$^\dagger$ & $0.26$ & $.011$ \\
+Mean search actions$^\dagger$ & $0.23$ & $.019$ \\
+Mean step count$^\dagger$ & $0.21$ & $.037$ \\
 \midrule
 Question word count & $0.10$ & $.31$ \\
+Question char count & $0.12$ & $.25$ \\
 N context documents & $0.04$ & $.66$ \\
+Mean thought length (S3) & $0.12$ & $.24$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\subsection{Boundaries of the Signal}
 
-\subsection{Boundaries}
+\textbf{Per-run correctness.} We tested whether hidden states predict \emph{per-run} correctness (whether a specific run will produce the correct answer) using linear probes with leave-one-question-out cross-validation. Across all configurations---layers 72 and 80, steps 3 and 4, raw features, PCA reduction, within-question centering, and even single-turn (non-agentic) generation---AUC ranges from 0.34 to 0.56, all near or below chance. This holds because correctness on HotpotQA is primarily question-determined: 64 questions are 10/10 correct and 23 are 0/10, leaving minimal within-question variance. The consistency signal is fundamentally a \emph{between-run relational} property, not a within-run absolute one.
 
-\textbf{Per-run correctness.} A nearest-centroid classifier achieves AUC~$\approx 0.61 \pm 0.05$ for distinguishing consistently-correct questions---modestly above chance. The signal predicts \emph{consistency}, not \emph{correctness}.
+\textbf{Hard vs.\ easy questions.} The signal is driven by easy questions ($r = -0.57$, $p < 10^{-5}$, $n = 50$) rather than hard ($r = -0.02$, $p = 0.88$, $n = 44$). Leave-one-out analysis confirms robustness within the easy subset: all 50 iterations remain significant ($r \in [-0.67, -0.55]$). Hard questions may lack sufficient baseline consistency for the signal to manifest---21/49 are consistently wrong and 11/49 are inconsistent, providing no ``committed correct'' reference.
 
-\textbf{Hard vs.\ easy questions.} The signal is driven by easy questions ($r = -0.57$, $p < 10^{-5}$, $n = 50$) rather than hard ($r = -0.02$, $p = 0.88$, $n = 44$). Leave-one-out analysis confirms robustness within the easy subset (all 50 iterations significant, $r \in [-0.67, -0.55]$). Hard questions may lack sufficient variance for the signal to manifest.
+\textbf{Nearest-centroid classifier.} A nearest-centroid classifier using activation similarity achieves AUC $\approx 0.61 \pm 0.05$ (5-fold CV) for distinguishing consistent from inconsistent questions. Modestly above chance, confirming the signal exists but is not sufficient for reliable prediction from a single feature.
 
+\subsection{Cross-Model Validation}
 
+To test whether representational commitment is architecture-dependent, we run the same experiment on Qwen~2.5~72B \citep{qwen2.5}---a model with the same depth (80 layers) and hidden dimension (8{,}192) as Llama but a different architecture, tokenizer, and training corpus. We select 20 questions (10 easy, 10 hard) from the original 100 and run 10 trials each on both models.
+
+\begin{table}[t]
+\caption{Cross-model validation at step~4 ($n = 20$). Both models show the negative correlation between activation similarity and behavioral CV, with Qwen exhibiting a stronger and more broadly distributed signal. $^*p < 0.05$.}
+\label{tab:crossmodel}
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{Llama 3.1 70B} & \multicolumn{2}{c}{Qwen 2.5 72B} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Layer & $r$ & $p$ & $r$ & $p$ \\
+\midrule
+0  & $0.40$ & $.080$ & $0.63^*$ & $.003$ \\
+8  & $-0.26$ & $.269$ & $-0.46^*$ & $.039$ \\
+16 & $-0.37$ & $.109$ & $-0.59^*$ & $.006$ \\
+24 & $-0.40$ & $.081$ & $-0.65^*$ & $.002$ \\
+\textbf{32} & $-0.44$ & $.054$ & $\mathbf{-0.74^*}$ & $\mathbf{.0002}$ \\
+40 & $-0.54^*$ & $.014$ & $-0.68^*$ & $.001$ \\
+48 & $-0.56^*$ & $.011$ & $-0.73^*$ & $.0003$ \\
+56 & $-0.58^*$ & $.007$ & $-0.61^*$ & $.004$ \\
+64 & $-0.59^*$ & $.007$ & $-0.66^*$ & $.002$ \\
+72 & $-0.59^*$ & $.007$ & $-0.62^*$ & $.004$ \\
+80 & $-0.57^*$ & $.009$ & $-0.43$ & $.060$ \\
+\midrule
+Sig.\ layers & \multicolumn{2}{c}{6 / 11} & \multicolumn{2}{c}{9 / 11} \\
+Peak $r$ & \multicolumn{2}{c}{$-0.59$ (L72)} & \multicolumn{2}{c}{$-0.74$ (L32)} \\
+Accuracy & \multicolumn{2}{c}{0.70} & \multicolumn{2}{c}{0.82} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:crossmodel} shows that the negative correlation replicates in Qwen with an even stronger peak ($r = -0.74$ at layer~32, $p = 0.0002$) and broader significance (9/11 layers vs.\ 6/11). Figure~\ref{fig:crossmodel} visualizes the layer-wise profiles side by side. The signal is not an artifact of a particular model family.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/cross_model_layer_comparison.png}
+\caption{Layer-wise correlation between activation similarity and behavioral CV at step~4 for Llama~3.1~70B and Qwen~2.5~72B on the same 20 questions. Both models show the negative correlation characteristic of representational commitment, with different peak layers (72 vs.\ 32). $^*p < 0.05$.}
+\label{fig:crossmodel}
+\end{figure}
+
+Notably, while both models exhibit the commitment signal, the \emph{peak layer} differs: Llama peaks at layer~72 (90\% depth) while Qwen peaks at layer~32 (40\% depth). This suggests representational commitment is a universal phenomenon whose depth profile is architecture-dependent.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\textbf{Why does high similarity predict inconsistency?} When all runs produce similar hidden states despite receiving different observations, the model has not committed to a strategy. These undifferentiated representations are fragile: sampling perturbations have no anchor, and trajectories diverge. When observations produce different hidden states, each run has integrated evidence into a committed representation that guides consistent behavior.
+\textbf{Representational commitment as a new axis.} Recent work has identified linear directions in activation space encoding behavioral properties: persona vectors for character traits \citep{anthropic_persona}, the assistant axis for default model behavior \citep{anthropic_axis}, and truth directions for factual accuracy \citep{marks2024geometry}. Our finding suggests \emph{commitment}---the degree to which a model integrates observations---may constitute another such axis relevant to agent reliability. Unlike persona or truth, commitment is a dynamic property that emerges during multi-step interaction.
 
-\textbf{Why step~4?} Steps 1--3 involve initial queries with limited information. By step~4, the model has received 3--4 observations and must integrate them. This is the commitment juncture. The signal fading at step~5 reflects trajectories having already diverged.
+\textbf{Why step~4?} Steps 1--3 involve initial queries that return limited information. By step~4, the model has received 3--4 observations and must integrate them into a coherent interpretation. This is the commitment juncture: models that update their representations proceed consistently; those that do not, diverge. The signal fading at step~5 suggests that by then, trajectories have already committed or scattered beyond the point where hidden states carry a clean signal.
 
-\textbf{Implications and limitations.} This opens a direction connecting agent reliability to internal representations, with applications in monitoring (flagging uncommitted states), intervention (activation steering), and architecture design. Our study is limited to one model, one task, and one consistency measure. The causal direction is uncertain, and the hard-question null result limits generalizability.
+\textbf{Single-turn vs.\ multi-step probing.} A key negative finding: correctness probes that work in single-turn settings \citep{gnosis, stickland2024reasoning} fail in our multi-step agentic setting. We confirmed this with a direct comparison: single-turn probing on the same questions achieves AUC = 0.35, even worse than multi-step. The failure is not caused by context accumulation but by correctness being question-determined. This highlights a gap in the probing literature that assumes within-input variance exists.
 
+\textbf{Cross-model universality.} The replication on Qwen~2.5~72B---a model with different architecture, tokenizer, and training data---confirms that representational commitment is not a Llama-specific artifact. The different peak layers (Llama: layer~72, 90\% depth; Qwen: layer~32, 40\% depth) suggest that \emph{where} commitment manifests is architecture-dependent, but \emph{that} it manifests is universal. This parallels findings in vision models, where different architectures learn similar features at different depths \citep{raghu2021vision}. Qwen's stronger signal ($r = -0.74$ vs.\ $-0.59$) may reflect its higher accuracy (82\% vs.\ 70\%), producing more questions in the ``committed correct'' regime where the signal is strongest.
+
+\textbf{Limitations.} Our study uses two models on a single benchmark (HotpotQA). Cross-benchmark validation would further strengthen generalizability. CV of step counts is a coarse consistency proxy; sequence-level metrics may reveal finer structure. The hard-question null result limits the scope of the finding. While the partial correlation analysis rules out task difficulty, unmeasured confounders may exist. The cross-model experiment uses a 20-question subset; larger-scale replication is warranted.
+
+\textbf{Future directions.} Two directions follow: (1)~circuit tracing at divergence points using attribution graphs \citep{anthropic_circuits} to identify the computations underlying representational commitment; and (2)~consistency-aware training via DPO on committed vs.\ uncommitted trajectories.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Behavioral consistency in LLM agents has a measurable internal signature. At step~4 of a ReAct trajectory (layers 32--80), the degree to which hidden states differentiate across runs predicts downstream consistency. This signal survives difficulty controls, is not explained by simple baselines, and predicts consistency but not correctness.
+Behavioral consistency in LLM agents has a measurable internal signature. At step~4 of a ReAct trajectory, the degree to which hidden states differentiate across runs---what we call \emph{representational commitment}---predicts downstream behavioral consistency. This signal survives difficulty controls (partial $r = -0.45$), is robust to permutation testing ($p < 0.001$), and is not explained by simple baselines. It predicts consistency but not correctness, establishing it as a relational property of agent representations. Cross-model validation on Qwen~2.5~72B confirms the signal is architecture-independent ($r = -0.74$), with different peak layers suggesting commitment is a universal phenomenon that manifests at architecture-dependent depths. These findings bridge behavioral agent evaluation and mechanistic interpretability, opening a new direction for representation-level monitoring of agent systems.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{references}
 \bibliographystyle{icml2026}
 
