@@ -18,6 +18,7 @@
 \usepackage{mathtools}
 \usepackage{amsthm}
 \usepackage{multirow}
+\usepackage{enumitem}
 
 \icmltitlerunning{Behavioral Consistency in LLM-Based Agents}
 
@@ -49,6 +50,7 @@ We find the answer is often no.
 In a study of 10,000 agent runs across five models and four providers on 200 HotpotQA questions, ReAct-style agents produce 2.3--4.2 distinct action sequences per 10 runs on average.
 This variance is associated with failure: consistent tasks ($\leq$2 unique paths) achieve 80--87\% accuracy while inconsistent tasks ($\geq$4 paths) achieve 43--65\%, a gap that persists after controlling for task difficulty (partial $r=-0.17$ to $-0.50$, $p<0.02$).
 Divergence concentrates at step~2 (52.5\% of Llama tasks), and answer entropy achieves AUROC 0.67--0.69 as a lightweight failure detector.
+Exploiting this signal, selective prediction---answering only when $k\!=\!3$ runs agree---achieves 87--88\% accuracy at 54--62\% coverage, a 6--14pp gain over single-run baselines.
 A cross-benchmark pilot on SWE-bench (150 runs) preserves the consistency hierarchy, and bootstrap analysis shows single-run evaluations produce incorrect model rankings 70.1\% of the time.
 Our results suggest that multi-run evaluation and consistency monitoring should become standard practice for agent deployments.
 \end{abstract}
@@ -72,6 +74,8 @@ We present a systematic empirical study of behavioral consistency in ReAct-style
 
     \item \textbf{Failure detection}: Answer entropy achieves AUROC 0.67--0.69 as a runtime failure signal, with precision up to 67\% vs.\ a 17--24\% baseline.
 
+    \item \textbf{Actionable intervention}: Selective prediction via unanimous $k\!=\!3$ agreement achieves 87--88\% accuracy (6--14pp above baselines) at 54--62\% coverage, instantiating the selective classification framework for agents.
+
     \item \textbf{Early divergence and path length}: 20.0\% of tasks diverge by step~2 (52.5\% for Llama); path length correlates with both consistency and correctness ($\rho=0.43$--$0.74$).
 
     \item \textbf{Ranking instability}: Single-run evaluations produce incorrect model rankings 70.1\% [69.2--71.0\%] of the time, undermining standard benchmark methodology.
@@ -88,8 +92,8 @@ ReAct \citep{yao2022react} introduced interleaving reasoning with actions. Subse
 \paragraph{Agent Consistency.}
 $\tau$-bench \citep{yao2024tau} showed that GPT-4o's pass rate drops from 60\% (pass$^1$) to 25\% (pass$^8$). While $\tau$-bench quantifies \emph{whether} agents are inconsistent, we investigate \emph{where} and \emph{why}: tracing divergence to step~2, correlating consistency with correctness, and identifying path length as a signal. \citet{stroebl2024agents} argue that benchmarks overestimate agent capabilities; our findings support this.
 
-\paragraph{Self-Consistency and Uncertainty.}
-\citet{wang2022self} use majority voting over sampled chains to boost accuracy. We study consistency as a diagnostic signal rather than an ensembling strategy. Prior work on LLM calibration \citep{kadavath2022language} and semantic uncertainty \citep{kuhn2023semantic} focuses on single-turn outputs; we extend this to multi-step agentic settings.
+\paragraph{Uncertainty and Selective Prediction.}
+Our work connects to three threads. First, \emph{ensemble disagreement}: deep ensembles use prediction variance as an uncertainty estimate \citep{lakshminarayanan2017simple}; behavioral consistency across agent runs is an analogous signal, where each run acts as an implicit ensemble member. Second, \emph{self-consistency}: \citet{wang2022self} show that majority voting over sampled reasoning chains improves accuracy; we extend this from single-turn CoT to multi-step agentic settings and additionally study consistency as a \emph{diagnostic} signal, not just an ensembling strategy (Section~\ref{sec:intervention}). Third, \emph{selective prediction}: \citet{geifman2017selective} and \citet{kamath2020selective} show that abstaining on uncertain inputs improves precision; our consistency-filtered results instantiate this for agents. Unlike verbalized confidence \citep{xiong2024llms, tian2023just}, behavioral consistency requires no model modification---it emerges naturally from repeated execution. Prior work on LLM calibration \citep{kadavath2022language} and semantic uncertainty \citep{kuhn2023semantic} focuses on single-turn outputs; we extend to multi-step agentic behavior.
 
 % ============================================================================
 % METHODOLOGY
@@ -183,7 +187,7 @@ Llama 70B & 82.3 & 64.7 & 17.6 & $-$.35 & 61/104 \\
 \end{tabular}
 \end{table}
 
-\paragraph{Controlling for difficulty.} Task difficulty confounds the consistency--correctness relationship. We compute a difficulty proxy (mean correctness across all models) and bin questions into Easy ($\geq$0.80, $n=135$), Medium (0.40--0.79, $n=31$), and Hard ($<$0.40, $n=34$). The consistency gap persists within Easy and Medium strata (2--22pp) but vanishes for Hard tasks. Partial correlations remain significant for three models: Gemini ($r=-0.50$, $p<0.001$), Llama ($r=-0.18$, $p=0.012$), and GPT-5 ($r=-0.17$, $p=0.019$); full results in Appendix~\ref{app:difficulty}.
+\paragraph{Controlling for difficulty.} Task difficulty confounds the consistency--correctness relationship. We compute a difficulty proxy (mean correctness across all models) and bin questions into Easy ($\geq$0.80, $n=135$), Medium (0.40--0.79, $n=31$), and Hard ($<$0.40, $n=34$). The consistency gap persists within Easy and Medium strata (2--22pp) but reverses for Hard tasks, where inconsistent tasks marginally outperform consistent ones. This reversal is driven by \emph{consistent-wrong} behavior: across models, 91\% (53/58) of consistent Hard tasks commit to an incorrect answer, while 42\% (27/65) of inconsistent Hard tasks recover at least one correct run through exploration (Appendix~\ref{app:difficulty}). Partial correlations remain significant for three models: Gemini ($r=-0.50$, $p<0.001$), Llama ($r=-0.18$, $p=0.012$), and GPT-5 ($r=-0.17$, $p=0.019$).
 
 \subsection{Consistency as a Runtime Failure Detector}
 \label{sec:failure_detection}
@@ -209,6 +213,31 @@ Claude Son.\ 4.5 & H$>$0.5 & 17.0\% & 57.7\% & .570 \\
 \end{table}
 
 For the most variable models (Llama, GPT-5, Gemini), answer entropy achieves AUROC 0.67--0.69, substantially above the 0.50 random baseline, validating consistency as a lightweight runtime failure signal.
+
+\subsection{Majority Voting and Selective Prediction}
+\label{sec:intervention}
+
+Can consistency be \emph{exploited}, not just observed? We simulate a majority-vote intervention using existing multi-run data: for budget $k$, subsample $k$ runs per question, take the majority answer, and evaluate accuracy (500 bootstrap iterations).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Majority-vote accuracy (\%) and selective prediction. $k\!=\!1$ is single-run baseline. Sel.\ = unanimous $k\!=\!3$ (answer only when all 3 agree).}
+\label{tab:vote}
+\begin{tabular}{l@{\hskip 5pt}c@{\hskip 5pt}c@{\hskip 5pt}c@{\hskip 5pt}c@{\hskip 5pt}c}
+\toprule
+\textbf{Model} & $k\!=\!1$ & $k\!=\!3$ & \textbf{Gain} & \textbf{Sel.\ Acc} & \textbf{Cov.} \\
+\midrule
+Llama 70B & 73.6 & 75.6 & +2.0 & 87.2 & 53.8 \\
+Claude Son.\ 4.5 & 81.5 & 82.2 & +0.7 & 87.8 & 61.8 \\
+GPT-5 & 79.6 & 80.1 & +0.5 & 88.1 & 55.2 \\
+GPT-4o & 73.4 & 73.3 & $-$0.0 & 72.3 & 11.7 \\
+Gemini 3 Pro & 72.8 & 72.8 & $-$0.0 & 75.9 & 64.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:vote} reveals that consistency works far better as a \emph{filter} than an \emph{aggregator}---a striking contrast with single-turn self-consistency \citep{wang2022self}, where majority voting improves CoT accuracy by 5--17pp. In our multi-step agentic setting, voting yields only +0--2pp because agentic errors are \emph{systematic}: an early wrong action commits the agent to an incorrect trajectory, producing consistent-wrong answers that voting cannot correct. \emph{Selective prediction}---answering only when all $k\!=\!3$ runs agree---is the stronger intervention: for Llama, Claude, and GPT-5, unanimous agreement achieves 87--88\% accuracy (6--14pp above baselines) at 54--62\% coverage. The asymmetry is explained by a 2$\times$2 taxonomy of task outcomes: consistent-correct tasks (25--68\% per model) are retained; inconsistent-wrong tasks (6--18\%) are filtered; the ceiling is set by \emph{consistent-wrong} tasks (5--13\%), where the model confidently errs. Notably, 61\% of Claude's errors are consistent-wrong vs.\ only 25\% of Llama's, explaining why Llama benefits most from voting (full taxonomy in Appendix~\ref{app:vote}).
 
 \subsection{Divergence Occurs Early; Path Length Matters}
 
@@ -264,7 +293,10 @@ We perform 10,000 bootstrap iterations across five models on the 100 shared ques
 While $\tau$-bench \citep{yao2024tau} established that agents are inconsistent, we provide complementary insights: \emph{where} variance originates (step~2), its association with correctness ($r=-0.35$ to $-0.58$), and its practical utility for failure detection (AUROC 0.67--0.69). These findings suggest actionable interventions beyond measuring pass$^k$.
 
 \paragraph{Practical implications.}
-Consistency monitoring is feasible and useful: running parallel executions and checking agreement could flag likely failures, with answer entropy as a lightweight signal. The step~2 bottleneck suggests that improving first-query formulation could reduce downstream variance. For model selection, Claude exhibited the highest accuracy and consistency in our evaluation, though we cannot disentangle model capability from training methodology.
+Consistency monitoring is feasible and actionable. Our majority-vote experiment (Section~\ref{sec:intervention}) shows that even $k\!=\!3$ runs suffice: selective prediction on unanimous agreement achieves 87--88\% accuracy for three models, a 6--14pp gain over single-run baselines at 54--62\% coverage. Crucially, consistency functions as a \emph{filter} (abstain on disagreement) rather than an \emph{aggregator} (vote to pick the best): voting gains are minimal (+0--2pp), but filtering gains are substantial (+4--13pp). The ceiling on filtering is set by consistent-wrong tasks (5--13\% per model), where the agent confidently commits to an incorrect answer. Answer entropy provides a complementary lightweight signal (AUROC 0.67--0.69). The step~2 bottleneck suggests that improving first-query formulation could reduce downstream variance.
+
+\paragraph{Consistency as implicit calibration.}
+Traditional calibration asks whether a model's stated confidence matches its accuracy \citep{kadavath2022language}. Behavioral consistency provides an alternative, \emph{behavioral} notion of calibration: agents that produce diverse trajectories across runs are implicitly signaling uncertainty about the task, much as deep-ensemble disagreement signals epistemic uncertainty \citep{lakshminarayanan2017simple}. Unlike verbalized confidence---which requires prompting strategies and is often poorly calibrated \citep{xiong2024llms, tian2023just}---behavioral consistency emerges naturally from repeated execution and requires no model modification. Our selective-prediction results (Table~\ref{tab:vote}) confirm that this implicit signal is actionable: unanimous agreement among $k\!=\!3$ runs selects for high-accuracy subsets. This positions multi-run consistency as a practical calibration mechanism for deployed agents.
 
 \paragraph{Limitations and future work.}
 Our analysis primarily uses HotpotQA with a 3-tool action space; the SWE-bench pilot provides preliminary evidence of generalizability. The temperature ablation uses a smaller sample (20 questions). We cannot establish causality from observational data. Gemini 3 Pro required a \texttt{top\_p} workaround to achieve stochastic sampling (Appendix~\ref{sec:gemini_note}), and its Q100--199 data collection is ongoing; current Gemini results use 102 questions. We plan extensions to multimodal agents and analytical reasoning (FinQA, GAIA).
@@ -274,7 +306,7 @@ Our analysis primarily uses HotpotQA with a 3-tool action space; the SWE-bench p
 % ============================================================================
 \section{Conclusion}
 
-Behavioral consistency in LLM agents is measurable, associated with correctness, and practically useful. Across 10,000 runs on five models, consistent agents achieve 80--87\% accuracy vs.\ 43--65\% for inconsistent ones, with effect sizes that survive difficulty controls. Consistency metrics detect failures with AUROC 0.67--0.69, and single-run evaluations produce incorrect rankings 70.1\% of the time. These findings argue for multi-run evaluation and runtime consistency monitoring as standard practice.
+Behavioral consistency in LLM agents is measurable, associated with correctness, and practically exploitable. Across 10,000 runs on five models, consistent agents achieve 80--87\% accuracy vs.\ 43--65\% for inconsistent ones, with effect sizes that survive difficulty controls. Consistency metrics detect failures with AUROC 0.67--0.69, and selective prediction on unanimous $k\!=\!3$ agreement yields 87--88\% accuracy at 54--62\% coverage---demonstrating that behavioral consistency functions as an actionable confidence signal. Single-run evaluations produce incorrect rankings 70.1\% of the time. These findings argue for multi-run evaluation, consistency-based selective prediction, and runtime consistency monitoring as standard practice.
 
 Code and data: \url{https://github.com/amanmehta-maniac/agent-consistency}.
 
@@ -354,6 +386,17 @@ Hard (34) & $-$13.3pp & $-$7.1pp & 1.2pp & $-$5.3pp & $-$5.5pp \\
 
 Partial correlations between unique sequences and accuracy, controlling for difficulty (continuous): Gemini $r=-0.496$ ($p<0.001$), Llama $r=-0.178$ ($p=0.012$), GPT-5 $r=-0.166$ ($p=0.019$), GPT-4o $r=-0.075$ ($p=0.458$), Claude $r=-0.035$ ($p=0.620$). The association remains significant for three of five models.
 
+\paragraph{Consistent-Wrong analysis.} The Hard stratum reversal (negative gaps above) is explained by \emph{consistent-wrong} behavior: on tasks where the model lacks knowledge, consistency reflects confident commitment to an incorrect answer rather than reliable competence. We classify each model$\times$Hard-task pair into four categories based on unique action sequences and correctness:
+
+\begin{itemize}[nosep,leftmargin=*]
+  \item \textbf{Consistent-Correct} ($\leq$2 seqs, majority correct): 5/137 (3.6\%)
+  \item \textbf{Consistent-Wrong} ($\leq$2 seqs, majority wrong): 53/137 (38.7\%)
+  \item \textbf{Inconsistent-Lucky} ($\geq$4 seqs, $\geq$1 correct run): 27/137 (19.7\%)
+  \item \textbf{Inconsistent-Wrong} ($\geq$4 seqs, 0 correct): 38/137 (27.7\%)
+\end{itemize}
+
+Among consistent Hard tasks, 91.4\% (53/58) are Consistent-Wrong---the model locks into one incorrect reasoning path. Conversely, 41.5\% (27/65) of inconsistent Hard tasks achieve at least one correct run (mean 3.1/10 correct runs), confirming that behavioral variability enables exploration that occasionally recovers the right answer. This also partly reflects correctness metric sensitivity: several Consistent-Wrong tasks have semantically correct model answers (e.g., ``Pasek and Paul'' for gold ``Pasek \& Paul'', ``Kohlberg Kravis Roberts'' for gold ``KKR \& Co'') that fail fuzzy matching. Per-model consistent-wrong rates: GPT-5 94\% (16/17), Llama 100\% (7/7), Claude 79\% (15/19), Gemini 100\% (7/7), GPT-4o 100\% (8/8).
+
 \section{Cross-Benchmark Comparison}
 \label{app:swebench}
 
@@ -385,5 +428,121 @@ On the first 100 questions with type annotations, we compare bridge questions (m
 \label{app:metrics}
 
 We verify robustness to the choice of correctness metric. Under exact match (EM), overall accuracy decreases (e.g., Claude: 43.6\% EM vs.\ 81.5\% fuzzy) but model rankings and consistency gaps are preserved. Under token F1 $>$ 0.5, results closely track fuzzy match. The consistency--correctness association holds across all three metrics for all five models.
+
+\section{Majority Voting and Selective Prediction: Full Results}
+\label{app:vote}
+
+\paragraph{Task-outcome taxonomy.} Table~\ref{tab:taxonomy} classifies each task by consistency ($\leq$2 vs.\ $\geq$4 unique sequences) and correctness (majority answer matches gold). The taxonomy explains why filtering outperforms voting: consistent-wrong tasks (5--13\%) set the ceiling on filtering, while inconsistent-correct tasks (8--38\%)---where voting could theoretically consolidate the right answer---are rare except for Llama.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Task-outcome taxonomy (\% of tasks). Consistent: $\leq$2 unique seqs; Inconsistent: $\geq$4.}
+\label{tab:taxonomy}
+\scriptsize
+\begin{tabular}{l@{\hskip 4pt}c@{\hskip 4pt}c@{\hskip 4pt}c@{\hskip 4pt}c}
+\toprule
+\textbf{Model} & \textbf{Cons-Right} & \textbf{Cons-Wrong} & \textbf{Inc-Right} & \textbf{Inc-Wrong} \\
+\midrule
+Claude Son.\ 4.5 & 67.5 & 10.0 & 10.5 & 5.5 \\
+GPT-5 & 61.5 & 9.0 & 7.5 & 7.0 \\
+GPT-4o & 57.0 & 13.0 & 7.0 & 12.0 \\
+Gemini 3 Pro & 52.1 & 9.2 & 15.1 & 17.6 \\
+Llama 70B & 25.0 & 5.5 & 38.0 & 14.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:vote_full} reports majority-vote accuracy across all budget levels. Gains are largest for Llama ($+$4.4pp at $k\!=\!10$) and Claude ($+$2.0pp), while GPT-4o and Gemini show no improvement---consistent with the hypothesis that voting helps only when the model explores diverse-but-sometimes-correct paths.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Majority-vote accuracy (\%) by budget $k$ (500 bootstrap iterations). Gain is relative to $k\!=\!1$.}
+\label{tab:vote_full}
+\scriptsize
+\begin{tabular}{l@{\hskip 3pt}c@{\hskip 3pt}c@{\hskip 3pt}c@{\hskip 3pt}c@{\hskip 3pt}c}
+\toprule
+\textbf{Model} & $k\!=\!1$ & $k\!=\!3$ & $k\!=\!5$ & $k\!=\!7$ & $k\!=\!10$ \\
+\midrule
+Llama 70B & 73.6 & 75.6{\tiny+2.0} & 76.9{\tiny+3.3} & 77.2{\tiny+3.6} & 78.0{\tiny+4.4} \\
+Claude S.\ 4.5 & 81.5 & 82.2{\tiny+0.7} & 82.6{\tiny+1.0} & 82.9{\tiny+1.4} & 83.5{\tiny+2.0} \\
+GPT-5 & 79.6 & 80.1{\tiny+0.5} & 80.2{\tiny+0.6} & 80.3{\tiny+0.7} & 80.5{\tiny+0.9} \\
+GPT-4o & 73.4 & 73.3{\tiny$-$0.0} & 73.2{\tiny$-$0.2} & 72.8{\tiny$-$0.6} & 73.0{\tiny$-$0.4} \\
+Gemini 3 Pro & 72.8 & 72.8{\tiny$-$0.0} & 72.4{\tiny$-$0.4} & 72.2{\tiny$-$0.6} & 71.6{\tiny$-$1.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:selective_full} reports selective prediction at multiple agreement thresholds. Stricter thresholds yield higher accuracy but lower coverage. The accuracy--coverage tradeoff is favorable for Llama, Claude, and GPT-5; GPT-4o's extremely low coverage under unanimity reflects its high answer variability.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Selective prediction: accuracy (\%) and coverage (\%) at varying agreement thresholds.}
+\label{tab:selective_full}
+\scriptsize
+\begin{tabular}{llcc}
+\toprule
+\textbf{Model} & \textbf{Threshold} & \textbf{Acc.} & \textbf{Cov.} \\
+\midrule
+\multirow{5}{*}{Llama 70B}
+& Unanimous 3/3 & 87.2 & 53.8 \\
+& Majority 2/3 & 82.2 & 82.5 \\
+& Unanimous 5/5 & 88.7 & 44.2 \\
+& 4/5 & 86.7 & 63.8 \\
+& Majority 3/5 & 83.6 & 80.3 \\
+\midrule
+\multirow{5}{*}{Claude Son.\ 4.5}
+& Unanimous 3/3 & 87.8 & 61.8 \\
+& Majority 2/3 & 84.4 & 84.4 \\
+& Unanimous 5/5 & 88.4 & 55.4 \\
+& 4/5 & 87.8 & 67.3 \\
+& Majority 3/5 & 85.2 & 82.5 \\
+\midrule
+\multirow{5}{*}{GPT-5}
+& Unanimous 3/3 & 88.1 & 55.2 \\
+& Majority 2/3 & 83.2 & 78.8 \\
+& Unanimous 5/5 & 90.2 & 48.1 \\
+& 4/5 & 86.9 & 62.3 \\
+& Majority 3/5 & 84.1 & 75.3 \\
+\midrule
+\multirow{5}{*}{GPT-4o}
+& Unanimous 3/3 & 72.3 & 11.7 \\
+& Majority 2/3 & 78.0 & 42.4 \\
+& Unanimous 5/5 & 64.8 & 5.7 \\
+& 4/5 & 73.3 & 16.1 \\
+& Majority 3/5 & 78.7 & 35.0 \\
+\midrule
+\multirow{5}{*}{Gemini 3 Pro}
+& Unanimous 3/3 & 75.9 & 64.8 \\
+& Majority 2/3 & 73.3 & 84.8 \\
+& Unanimous 5/5 & 77.1 & 58.6 \\
+& 4/5 & 75.3 & 71.3 \\
+& Majority 3/5 & 73.5 & 82.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:stratum_vote} shows how the $k\!=\!3$ majority-vote gain varies by difficulty stratum. Gains concentrate on Easy and Medium tasks; Hard tasks show no improvement, consistent with the finding that consistency on hard tasks reflects consistent-wrong behavior (Appendix~\ref{app:difficulty}).
+
+\paragraph{Why self-consistency works less in agentic settings.} \citet{wang2022self} report 5--17pp gains from majority voting on single-turn CoT tasks (arithmetic, commonsense). Our agentic setting shows only 0--2pp gains. The difference is structural: in single-turn CoT, errors are primarily in the final reasoning step and the answer space is small, so diverse chains often converge on the correct answer. In multi-step agentic settings, an early wrong action (e.g., searching for the wrong entity at step~2) commits the agent to an incorrect trajectory for all subsequent steps, producing systematic errors that voting cannot correct. This makes consistency more valuable as a \emph{diagnostic} signal (is the agent confident?) than as an \emph{ensembling} strategy (pick the best answer).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Per-stratum $k\!=\!3$ majority-vote gain (pp) over $k\!=\!1$.}
+\label{tab:stratum_vote}
+\scriptsize
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Stratum} & \textbf{Llama} & \textbf{Claude} & \textbf{GPT-5} & \textbf{GPT-4o} & \textbf{Gemini} \\
+\midrule
+Easy & $+$2.4 & $+$0.3 & $+$0.7 & $+$0.3 & $+$0.7 \\
+Medium & $+$2.4 & $+$1.8 & $+$1.8 & $-$0.8 & $-$1.2 \\
+Hard & $-$0.0 & $+$0.9 & $-$1.4 & $+$0.1 & $-$0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \end{document}

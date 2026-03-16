@@ -1,0 +1,491 @@
+{
+  "Llama 3.1 70B": {
+    "n_tasks": 200,
+    "majority_vote": {
+      "k=1": {
+        "accuracy": 73.6,
+        "ci_low": 70.5,
+        "ci_high": 76.5,
+        "gain_pp": 0.0,
+        "n_tasks": 200
+      },
+      "k=3": {
+        "accuracy": 75.6,
+        "ci_low": 72.5,
+        "ci_high": 78.0,
+        "gain_pp": 2.0,
+        "n_tasks": 200
+      },
+      "k=5": {
+        "accuracy": 76.9,
+        "ci_low": 74.5,
+        "ci_high": 79.0,
+        "gain_pp": 3.3,
+        "n_tasks": 200
+      },
+      "k=7": {
+        "accuracy": 77.2,
+        "ci_low": 75.5,
+        "ci_high": 79.0,
+        "gain_pp": 3.6,
+        "n_tasks": 200
+      },
+      "k=10": {
+        "accuracy": 78.0,
+        "ci_low": 78.0,
+        "ci_high": 78.0,
+        "gain_pp": 4.4,
+        "n_tasks": 200
+      }
+    },
+    "selective_prediction": {
+      "unanimous_3/3": {
+        "accuracy": 87.2,
+        "coverage": 53.8,
+        "effective_accuracy": 46.9,
+        "n_answered": 107.6,
+        "n_total": 200
+      },
+      "majority_2/3": {
+        "accuracy": 82.2,
+        "coverage": 82.5,
+        "effective_accuracy": 67.8,
+        "n_answered": 164.9,
+        "n_total": 200
+      },
+      "unanimous_5/5": {
+        "accuracy": 88.7,
+        "coverage": 44.2,
+        "effective_accuracy": 39.2,
+        "n_answered": 88.5,
+        "n_total": 200
+      },
+      "4/5": {
+        "accuracy": 86.7,
+        "coverage": 63.8,
+        "effective_accuracy": 55.4,
+        "n_answered": 127.7,
+        "n_total": 200
+      },
+      "majority_3/5": {
+        "accuracy": 83.6,
+        "coverage": 80.3,
+        "effective_accuracy": 67.2,
+        "n_answered": 160.7,
+        "n_total": 200
+      }
+    },
+    "per_stratum": {
+      "Easy": {
+        "n_tasks": 135,
+        "k1_accuracy": 93.9,
+        "k3_accuracy": 96.3,
+        "gain_pp": 2.4
+      },
+      "Medium": {
+        "n_tasks": 31,
+        "k1_accuracy": 55.6,
+        "k3_accuracy": 58.0,
+        "gain_pp": 2.4
+      },
+      "Hard": {
+        "n_tasks": 34,
+        "k1_accuracy": 9.4,
+        "k3_accuracy": 9.4,
+        "gain_pp": -0.0
+      }
+    }
+  },
+  "Claude Sonnet 4.5": {
+    "n_tasks": 200,
+    "majority_vote": {
+      "k=1": {
+        "accuracy": 81.5,
+        "ci_low": 79.5,
+        "ci_high": 84.0,
+        "gain_pp": 0.0,
+        "n_tasks": 200
+      },
+      "k=3": {
+        "accuracy": 82.2,
+        "ci_low": 80.0,
+        "ci_high": 84.0,
+        "gain_pp": 0.7,
+        "n_tasks": 200
+      },
+      "k=5": {
+        "accuracy": 82.6,
+        "ci_low": 81.0,
+        "ci_high": 84.0,
+        "gain_pp": 1.0,
+        "n_tasks": 200
+      },
+      "k=7": {
+        "accuracy": 82.9,
+        "ci_low": 81.5,
+        "ci_high": 84.0,
+        "gain_pp": 1.4,
+        "n_tasks": 200
+      },
+      "k=10": {
+        "accuracy": 83.5,
+        "ci_low": 83.5,
+        "ci_high": 83.5,
+        "gain_pp": 2.0,
+        "n_tasks": 200
+      }
+    },
+    "selective_prediction": {
+      "unanimous_3/3": {
+        "accuracy": 87.8,
+        "coverage": 61.8,
+        "effective_accuracy": 54.3,
+        "n_answered": 123.6,
+        "n_total": 200
+      },
+      "majority_2/3": {
+        "accuracy": 84.4,
+        "coverage": 84.4,
+        "effective_accuracy": 71.2,
+        "n_answered": 168.7,
+        "n_total": 200
+      },
+      "unanimous_5/5": {
+        "accuracy": 88.4,
+        "coverage": 55.4,
+        "effective_accuracy": 49.0,
+        "n_answered": 110.8,
+        "n_total": 200
+      },
+      "4/5": {
+        "accuracy": 87.8,
+        "coverage": 67.3,
+        "effective_accuracy": 59.1,
+        "n_answered": 134.6,
+        "n_total": 200
+      },
+      "majority_3/5": {
+        "accuracy": 85.2,
+        "coverage": 82.5,
+        "effective_accuracy": 70.3,
+        "n_answered": 164.9,
+        "n_total": 200
+      }
+    },
+    "per_stratum": {
+      "Easy": {
+        "n_tasks": 135,
+        "k1_accuracy": 99.4,
+        "k3_accuracy": 99.8,
+        "gain_pp": 0.3
+      },
+      "Medium": {
+        "n_tasks": 31,
+        "k1_accuracy": 65.4,
+        "k3_accuracy": 67.1,
+        "gain_pp": 1.8
+      },
+      "Hard": {
+        "n_tasks": 34,
+        "k1_accuracy": 25.0,
+        "k3_accuracy": 25.8,
+        "gain_pp": 0.9
+      }
+    }
+  },
+  "GPT-5": {
+    "n_tasks": 200,
+    "majority_vote": {
+      "k=1": {
+        "accuracy": 79.6,
+        "ci_low": 77.0,
+        "ci_high": 82.0,
+        "gain_pp": 0.0,
+        "n_tasks": 200
+      },
+      "k=3": {
+        "accuracy": 80.1,
+        "ci_low": 78.0,
+        "ci_high": 82.0,
+        "gain_pp": 0.5,
+        "n_tasks": 200
+      },
+      "k=5": {
+        "accuracy": 80.2,
+        "ci_low": 78.5,
+        "ci_high": 81.5,
+        "gain_pp": 0.6,
+        "n_tasks": 200
+      },
+      "k=7": {
+        "accuracy": 80.3,
+        "ci_low": 79.0,
+        "ci_high": 81.5,
+        "gain_pp": 0.7,
+        "n_tasks": 200
+      },
+      "k=10": {
+        "accuracy": 80.5,
+        "ci_low": 80.5,
+        "ci_high": 80.5,
+        "gain_pp": 0.9,
+        "n_tasks": 200
+      }
+    },
+    "selective_prediction": {
+      "unanimous_3/3": {
+        "accuracy": 88.1,
+        "coverage": 55.2,
+        "effective_accuracy": 48.6,
+        "n_answered": 110.4,
+        "n_total": 200
+      },
+      "majority_2/3": {
+        "accuracy": 83.2,
+        "coverage": 78.8,
+        "effective_accuracy": 65.5,
+        "n_answered": 157.6,
+        "n_total": 200
+      },
+      "unanimous_5/5": {
+        "accuracy": 90.2,
+        "coverage": 48.1,
+        "effective_accuracy": 43.4,
+        "n_answered": 96.3,
+        "n_total": 200
+      },
+      "4/5": {
+        "accuracy": 86.9,
+        "coverage": 62.3,
+        "effective_accuracy": 54.2,
+        "n_answered": 124.7,
+        "n_total": 200
+      },
+      "majority_3/5": {
+        "accuracy": 84.1,
+        "coverage": 75.3,
+        "effective_accuracy": 63.3,
+        "n_answered": 150.6,
+        "n_total": 200
+      }
+    },
+    "per_stratum": {
+      "Easy": {
+        "n_tasks": 135,
+        "k1_accuracy": 97.7,
+        "k3_accuracy": 98.4,
+        "gain_pp": 0.7
+      },
+      "Medium": {
+        "n_tasks": 31,
+        "k1_accuracy": 76.5,
+        "k3_accuracy": 78.3,
+        "gain_pp": 1.8
+      },
+      "Hard": {
+        "n_tasks": 34,
+        "k1_accuracy": 10.3,
+        "k3_accuracy": 8.9,
+        "gain_pp": -1.4
+      }
+    }
+  },
+  "GPT-4o": {
+    "n_tasks": 100,
+    "majority_vote": {
+      "k=1": {
+        "accuracy": 73.4,
+        "ci_low": 70.0,
+        "ci_high": 76.0,
+        "gain_pp": 0.0,
+        "n_tasks": 100
+      },
+      "k=3": {
+        "accuracy": 73.3,
+        "ci_low": 70.0,
+        "ci_high": 76.0,
+        "gain_pp": -0.0,
+        "n_tasks": 100
+      },
+      "k=5": {
+        "accuracy": 73.2,
+        "ci_low": 70.0,
+        "ci_high": 76.0,
+        "gain_pp": -0.2,
+        "n_tasks": 100
+      },
+      "k=7": {
+        "accuracy": 72.8,
+        "ci_low": 70.0,
+        "ci_high": 75.0,
+        "gain_pp": -0.6,
+        "n_tasks": 100
+      },
+      "k=10": {
+        "accuracy": 73.0,
+        "ci_low": 73.0,
+        "ci_high": 73.0,
+        "gain_pp": -0.4,
+        "n_tasks": 100
+      }
+    },
+    "selective_prediction": {
+      "unanimous_3/3": {
+        "accuracy": 72.3,
+        "coverage": 11.7,
+        "effective_accuracy": 8.4,
+        "n_answered": 11.7,
+        "n_total": 100
+      },
+      "majority_2/3": {
+        "accuracy": 78.0,
+        "coverage": 42.4,
+        "effective_accuracy": 33.1,
+        "n_answered": 42.4,
+        "n_total": 100
+      },
+      "unanimous_5/5": {
+        "accuracy": 64.8,
+        "coverage": 5.7,
+        "effective_accuracy": 3.7,
+        "n_answered": 5.7,
+        "n_total": 100
+      },
+      "4/5": {
+        "accuracy": 73.3,
+        "coverage": 16.1,
+        "effective_accuracy": 11.8,
+        "n_answered": 16.1,
+        "n_total": 100
+      },
+      "majority_3/5": {
+        "accuracy": 78.7,
+        "coverage": 35.0,
+        "effective_accuracy": 27.5,
+        "n_answered": 35.0,
+        "n_total": 100
+      }
+    },
+    "per_stratum": {
+      "Easy": {
+        "n_tasks": 66,
+        "k1_accuracy": 97.3,
+        "k3_accuracy": 97.7,
+        "gain_pp": 0.3
+      },
+      "Medium": {
+        "n_tasks": 18,
+        "k1_accuracy": 47.3,
+        "k3_accuracy": 46.5,
+        "gain_pp": -0.8
+      },
+      "Hard": {
+        "n_tasks": 16,
+        "k1_accuracy": 2.9,
+        "k3_accuracy": 3.1,
+        "gain_pp": 0.1
+      }
+    }
+  },
+  "Gemini 3 Pro": {
+    "n_tasks": 109,
+    "majority_vote": {
+      "k=1": {
+        "accuracy": 72.8,
+        "ci_low": 69.7,
+        "ci_high": 75.2,
+        "gain_pp": 0.0,
+        "n_tasks": 109
+      },
+      "k=3": {
+        "accuracy": 72.8,
+        "ci_low": 70.6,
+        "ci_high": 75.2,
+        "gain_pp": -0.0,
+        "n_tasks": 109
+      },
+      "k=5": {
+        "accuracy": 72.4,
+        "ci_low": 70.6,
+        "ci_high": 74.3,
+        "gain_pp": -0.4,
+        "n_tasks": 109
+      },
+      "k=7": {
+        "accuracy": 72.2,
+        "ci_low": 70.6,
+        "ci_high": 74.3,
+        "gain_pp": -0.6,
+        "n_tasks": 109
+      },
+      "k=10": {
+        "accuracy": 71.6,
+        "ci_low": 71.6,
+        "ci_high": 71.6,
+        "gain_pp": -1.2,
+        "n_tasks": 109
+      }
+    },
+    "selective_prediction": {
+      "unanimous_3/3": {
+        "accuracy": 75.9,
+        "coverage": 64.8,
+        "effective_accuracy": 49.2,
+        "n_answered": 70.6,
+        "n_total": 109
+      },
+      "majority_2/3": {
+        "accuracy": 73.3,
+        "coverage": 84.8,
+        "effective_accuracy": 62.2,
+        "n_answered": 92.5,
+        "n_total": 109
+      },
+      "unanimous_5/5": {
+        "accuracy": 77.1,
+        "coverage": 58.6,
+        "effective_accuracy": 45.2,
+        "n_answered": 63.9,
+        "n_total": 109
+      },
+      "4/5": {
+        "accuracy": 75.3,
+        "coverage": 71.3,
+        "effective_accuracy": 53.7,
+        "n_answered": 77.7,
+        "n_total": 109
+      },
+      "majority_3/5": {
+        "accuracy": 73.5,
+        "coverage": 82.1,
+        "effective_accuracy": 60.4,
+        "n_answered": 89.5,
+        "n_total": 109
+      }
+    },
+    "per_stratum": {
+      "Easy": {
+        "n_tasks": 72,
+        "k1_accuracy": 95.9,
+        "k3_accuracy": 96.6,
+        "gain_pp": 0.7
+      },
+      "Medium": {
+        "n_tasks": 18,
+        "k1_accuracy": 53.0,
+        "k3_accuracy": 51.8,
+        "gain_pp": -1.2
+      },
+      "Hard": {
+        "n_tasks": 19,
+        "k1_accuracy": 3.0,
+        "k3_accuracy": 2.5,
+        "gain_pp": -0.5
+      }
+    }
+  },
+  "_summary": {
+    "avg_gain_k3_pp": 0.6,
+    "avg_gain_k5_pp": 0.9
+  }
+}
