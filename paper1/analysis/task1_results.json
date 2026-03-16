@@ -1,0 +1,151 @@
+{
+  "strata": {
+    "Easy": {
+      "n_questions": 135,
+      "models": {
+        "Llama 3.1 70B": {
+          "n_consistent": 48,
+          "n_inconsistent": 59,
+          "mean_consistent_acc": 0.975,
+          "mean_inconsistent_acc": 0.8830508474576271,
+          "gap_pp": 9.2
+        },
+        "Claude Sonnet 4.5": {
+          "n_consistent": 121,
+          "n_inconsistent": 10,
+          "mean_consistent_acc": 0.9950413223140496,
+          "mean_inconsistent_acc": 0.98,
+          "gap_pp": 1.5
+        },
+        "GPT-4o": {
+          "n_consistent": 52,
+          "n_inconsistent": 5,
+          "mean_consistent_acc": 0.9903846153846154,
+          "mean_inconsistent_acc": 0.98,
+          "gap_pp": 1.0
+        },
+        "GPT-5": {
+          "n_consistent": 108,
+          "n_inconsistent": 9,
+          "mean_consistent_acc": 0.9814814814814815,
+          "mean_inconsistent_acc": 0.9222222222222223,
+          "gap_pp": 5.9
+        },
+        "Gemini 3 Pro": {
+          "n_consistent": 53,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.9867924528301887,
+          "mean_inconsistent_acc": 0.8090909090909091,
+          "gap_pp": 17.8
+        }
+      }
+    },
+    "Medium": {
+      "n_questions": 31,
+      "models": {
+        "Llama 3.1 70B": {
+          "n_consistent": 6,
+          "n_inconsistent": 21,
+          "mean_consistent_acc": 0.5666666666666667,
+          "mean_inconsistent_acc": 0.5714285714285714,
+          "gap_pp": -0.5
+        },
+        "Claude Sonnet 4.5": {
+          "n_consistent": 15,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.6333333333333333,
+          "mean_inconsistent_acc": 0.6,
+          "gap_pp": 3.3
+        },
+        "GPT-4o": {
+          "n_consistent": 10,
+          "n_inconsistent": 7,
+          "mean_consistent_acc": 0.46,
+          "mean_inconsistent_acc": 0.4285714285714286,
+          "gap_pp": 3.1
+        },
+        "GPT-5": {
+          "n_consistent": 16,
+          "n_inconsistent": 9,
+          "mean_consistent_acc": 0.825,
+          "mean_inconsistent_acc": 0.6666666666666666,
+          "gap_pp": 15.8
+        },
+        "Gemini 3 Pro": {
+          "n_consistent": 6,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.65,
+          "mean_inconsistent_acc": 0.42727272727272725,
+          "gap_pp": 22.3
+        }
+      }
+    },
+    "Hard": {
+      "n_questions": 34,
+      "models": {
+        "Llama 3.1 70B": {
+          "n_consistent": 7,
+          "n_inconsistent": 24,
+          "mean_consistent_acc": 0.0,
+          "mean_inconsistent_acc": 0.13333333333333333,
+          "gap_pp": -13.3
+        },
+        "Claude Sonnet 4.5": {
+          "n_consistent": 19,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.2105263157894737,
+          "mean_inconsistent_acc": 0.2636363636363636,
+          "gap_pp": -5.3
+        },
+        "GPT-4o": {
+          "n_consistent": 8,
+          "n_inconsistent": 7,
+          "mean_consistent_acc": 0.0,
+          "mean_inconsistent_acc": 0.07142857142857142,
+          "gap_pp": -7.1
+        },
+        "GPT-5": {
+          "n_consistent": 17,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.11176470588235295,
+          "mean_inconsistent_acc": 0.1,
+          "gap_pp": 1.2
+        },
+        "Gemini 3 Pro": {
+          "n_consistent": 6,
+          "n_inconsistent": 11,
+          "mean_consistent_acc": 0.0,
+          "mean_inconsistent_acc": 0.05454545454545454,
+          "gap_pp": -5.5
+        }
+      }
+    }
+  },
+  "partial_correlations": {
+    "Llama 3.1 70B": {
+      "partial_r": -0.178,
+      "partial_p": 0.011649,
+      "n": 200
+    },
+    "Claude Sonnet 4.5": {
+      "partial_r": -0.035,
+      "partial_p": 0.620208,
+      "n": 200
+    },
+    "GPT-4o": {
+      "partial_r": -0.075,
+      "partial_p": 0.457675,
+      "n": 100
+    },
+    "GPT-5": {
+      "partial_r": -0.166,
+      "partial_p": 0.018866,
+      "n": 200
+    },
+    "Gemini 3 Pro": {
+      "partial_r": -0.496,
+      "partial_p": 0.0,
+      "n": 102
+    }
+  }
+}

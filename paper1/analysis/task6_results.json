@@ -1,0 +1,154 @@
+{
+  "consistency_correctness_gap": {
+    "Llama 3.1 70B": {
+      "n_consistent": 61,
+      "n_inconsistent": 104,
+      "mean_consistent_acc": 0.823,
+      "mean_inconsistent_acc": 0.6471,
+      "mann_whitney_U": 4284.5,
+      "mann_whitney_p": 3.438556957905264e-05,
+      "rank_biserial_r": -0.351,
+      "small_sample_caveat": false
+    },
+    "Claude Sonnet 4.5": {
+      "n_consistent": 155,
+      "n_inconsistent": 32,
+      "mean_consistent_acc": 0.8639,
+      "mean_inconsistent_acc": 0.6031,
+      "mann_whitney_U": 3438.0,
+      "mann_whitney_p": 5.051415088571603e-06,
+      "rank_biserial_r": -0.386,
+      "small_sample_caveat": false
+    },
+    "GPT-4o": {
+      "n_consistent": 70,
+      "n_inconsistent": 19,
+      "mean_consistent_acc": 0.8014,
+      "mean_inconsistent_acc": 0.4421,
+      "mann_whitney_U": 975.0,
+      "mann_whitney_p": 0.00014206218433808514,
+      "rank_biserial_r": -0.466,
+      "small_sample_caveat": false
+    },
+    "GPT-5": {
+      "n_consistent": 141,
+      "n_inconsistent": 29,
+      "mean_consistent_acc": 0.8589,
+      "mean_inconsistent_acc": 0.531,
+      "mann_whitney_U": 2926.5,
+      "mann_whitney_p": 5.385330244701557e-06,
+      "rank_biserial_r": -0.431,
+      "small_sample_caveat": false
+    },
+    "Gemini 3 Pro": {
+      "n_consistent": 65,
+      "n_inconsistent": 33,
+      "mean_consistent_acc": 0.8646,
+      "mean_inconsistent_acc": 0.4303,
+      "mann_whitney_U": 1696.5,
+      "mann_whitney_p": 2.5055497805961373e-08,
+      "rank_biserial_r": -0.582,
+      "small_sample_caveat": false
+    }
+  },
+  "ranking_instability": {
+    "n_models": 5,
+    "n_common_questions": 100,
+    "ground_truth_ranking": [
+      "Claude Sonnet 4.5",
+      "GPT-5",
+      "Llama 3.1 70B",
+      "GPT-4o",
+      "Gemini 3 Pro"
+    ],
+    "multi_run_acc": {
+      "Llama 3.1 70B": 76.6,
+      "Claude Sonnet 4.5": 81.0,
+      "GPT-4o": 73.3,
+      "GPT-5": 80.2,
+      "Gemini 3 Pro": 73.3
+    },
+    "n_bootstrap": 10000,
+    "n_ranking_matches": 2992,
+    "n_ranking_differs": 7008,
+    "instability_pct": 70.1,
+    "ci_95_low": 69.2,
+    "ci_95_high": 71.0
+  },
+  "step2_divergence": {
+    "Llama 3.1 70B": {
+      "n": 200,
+      "n_early_divergence": 105,
+      "pct": 52.5,
+      "ci_95_low": 45.6,
+      "ci_95_high": 59.3
+    },
+    "Claude Sonnet 4.5": {
+      "n": 200,
+      "n_early_divergence": 15,
+      "pct": 7.5,
+      "ci_95_low": 4.6,
+      "ci_95_high": 12.0
+    },
+    "GPT-4o": {
+      "n": 100,
+      "n_early_divergence": 11,
+      "pct": 11.0,
+      "ci_95_low": 6.3,
+      "ci_95_high": 18.6
+    },
+    "GPT-5": {
+      "n": 200,
+      "n_early_divergence": 15,
+      "pct": 7.5,
+      "ci_95_low": 4.6,
+      "ci_95_high": 12.0
+    },
+    "Gemini 3 Pro": {
+      "n": 102,
+      "n_early_divergence": 14,
+      "pct": 13.7,
+      "ci_95_low": 8.4,
+      "ci_95_high": 21.7
+    },
+    "pooled": {
+      "n": 802,
+      "n_early_divergence": 160,
+      "pct": 20.0,
+      "ci_95_low": 17.3,
+      "ci_95_high": 22.9
+    }
+  },
+  "path_length_correlation": {
+    "Llama 3.1 70B": {
+      "n": 200,
+      "spearman_r": 0.74,
+      "p_value": 0.0
+    },
+    "Claude Sonnet 4.5": {
+      "n": 200,
+      "spearman_r": 0.482,
+      "p_value": 0.0
+    },
+    "GPT-4o": {
+      "n": 100,
+      "spearman_r": 0.428,
+      "p_value": 9e-06
+    },
+    "GPT-5": {
+      "n": 200,
+      "spearman_r": 0.474,
+      "p_value": 0.0
+    },
+    "Gemini 3 Pro": {
+      "n": 102,
+      "spearman_r": 0.502,
+      "p_value": 0.0
+    },
+    "pooled": {
+      "n": 802,
+      "spearman_r": 0.48,
+      "p_value": 0.0
+    }
+  }
+}

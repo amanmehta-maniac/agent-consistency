@@ -1,0 +1,389 @@
+%%%%%%%% ICML 2026 SUBMISSION %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% For preprint (non-anonymous):
+\usepackage[preprint]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{multirow}
+
+\icmltitlerunning{Behavioral Consistency in LLM-Based Agents}
+
+\begin{document}
+
+\twocolumn[
+  \icmltitle{When Agents Disagree With Themselves: \\ Measuring Behavioral Consistency in LLM-Based Agents}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Aman Mehta}{snow}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{snow}{Snowflake AI Research}
+
+  \icmlcorrespondingauthor{Aman Mehta}{aman.mehta@snowflake.com}
+  \icmlkeywords{LLM agents, behavioral consistency, ReAct, reliability, variance}
+
+  \vskip 0.3in
+]
+
+\printAffiliationsAndNotice{}
+
+% ============================================================================
+% ABSTRACT
+% ============================================================================
+\begin{abstract}
+Run the same LLM agent on the same task twice: do you get the same behavior?
+We find the answer is often no.
+In a study of 10,000 agent runs across five models and four providers on 200 HotpotQA questions, ReAct-style agents produce 2.3--4.2 distinct action sequences per 10 runs on average.
+This variance is associated with failure: consistent tasks ($\leq$2 unique paths) achieve 80--87\% accuracy while inconsistent tasks ($\geq$4 paths) achieve 43--65\%, a gap that persists after controlling for task difficulty (partial $r=-0.17$ to $-0.50$, $p<0.02$).
+Divergence concentrates at step~2 (52.5\% of Llama tasks), and answer entropy achieves AUROC 0.67--0.69 as a lightweight failure detector.
+A cross-benchmark pilot on SWE-bench (150 runs) preserves the consistency hierarchy, and bootstrap analysis shows single-run evaluations produce incorrect model rankings 70.1\% of the time.
+Our results suggest that multi-run evaluation and consistency monitoring should become standard practice for agent deployments.
+\end{abstract}
+
+% ============================================================================
+% INTRODUCTION
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Large language model (LLM) based agents that use tools and multi-step reasoning are increasingly deployed for complex tasks \citep{yao2022react, schick2023toolformer}. As these systems move from prototypes to production, understanding their reliability becomes critical.
+
+A fundamental but understudied question is: \emph{how consistent are LLM agents in their behavior?} Given identical inputs, will an agent follow the same reasoning path and arrive at the same answer? This matters because inconsistency complicates debugging, may signal uncertainty exploitable for error detection, and could inform architecture decisions.
+
+We present a systematic empirical study of behavioral consistency in ReAct-style agents \citep{yao2022react}. Our key contributions:
+
+\begin{enumerate}
+    \item \textbf{Quantified behavioral variance}: 10,000 runs (200 tasks $\times$ 10 runs $\times$ 5 models) reveal 2.3--4.2 unique action sequences per task on average.
+
+    \item \textbf{Consistency--correctness association}: Consistent tasks achieve 80--87\% accuracy vs.\ 43--65\% for inconsistent tasks, with effect sizes $r=-0.35$ to $-0.58$ ($p<0.001$) that hold after controlling for task difficulty (partial $r=-0.17$ to $-0.50$).
+
+    \item \textbf{Failure detection}: Answer entropy achieves AUROC 0.67--0.69 as a runtime failure signal, with precision up to 67\% vs.\ a 17--24\% baseline.
+
+    \item \textbf{Early divergence and path length}: 20.0\% of tasks diverge by step~2 (52.5\% for Llama); path length correlates with both consistency and correctness ($\rho=0.43$--$0.74$).
+
+    \item \textbf{Ranking instability}: Single-run evaluations produce incorrect model rankings 70.1\% [69.2--71.0\%] of the time, undermining standard benchmark methodology.
+\end{enumerate}
+
+% ============================================================================
+% RELATED WORK
+% ============================================================================
+\section{Related Work}
+
+\paragraph{LLM-Based Agents.}
+ReAct \citep{yao2022react} introduced interleaving reasoning with actions. Subsequent work extended this to web browsing \citep{zhou2023webarena}, code execution \citep{yang2024swe}, and multi-agent systems \citep{wu2023autogen}. We study reliability under repeated execution.
+
+\paragraph{Agent Consistency.}
+$\tau$-bench \citep{yao2024tau} showed that GPT-4o's pass rate drops from 60\% (pass$^1$) to 25\% (pass$^8$). While $\tau$-bench quantifies \emph{whether} agents are inconsistent, we investigate \emph{where} and \emph{why}: tracing divergence to step~2, correlating consistency with correctness, and identifying path length as a signal. \citet{stroebl2024agents} argue that benchmarks overestimate agent capabilities; our findings support this.
+
+\paragraph{Self-Consistency and Uncertainty.}
+\citet{wang2022self} use majority voting over sampled chains to boost accuracy. We study consistency as a diagnostic signal rather than an ensembling strategy. Prior work on LLM calibration \citep{kadavath2022language} and semantic uncertainty \citep{kuhn2023semantic} focuses on single-turn outputs; we extend this to multi-step agentic settings.
+
+% ============================================================================
+% METHODOLOGY
+% ============================================================================
+\section{Methodology}
+
+\subsection{Agent Architecture}
+
+We implement a ReAct-style agent with three tools: \textbf{Search(query)} returns document titles via keyword matching, \textbf{Retrieve(title)} returns full text, and \textbf{Finish(answer)} terminates with a final answer. The agent follows the standard think--act--observe loop.
+
+\subsection{Experimental Setup}
+
+\paragraph{Dataset.} We use 200 questions from HotpotQA \citep{yang2018hotpotqa} validation (distractor setting), requiring multi-hop reasoning over 10 paragraphs (2 gold, 8 distractors).
+
+\paragraph{Models.} Five models across four providers: Llama 3.1 70B (Meta), GPT-4o and GPT-5 (OpenAI), Claude Sonnet 4.5 (Anthropic), and Gemini 3 Pro (Google).
+
+\paragraph{Runs.} For each question--model pair, 10 independent runs at temperature 0.7, yielding 10,000 total runs. Temperature ablation: 20 questions $\times$ 5 runs $\times$ 4 stochastic models $\times$ 3 temperatures.
+
+\paragraph{Statistical note.} All tests are two-sided; raw $p$-values without multiple-comparison correction given the exploratory nature.
+
+\subsection{Metrics}
+
+\textbf{Answer consistency}: fraction of runs producing the most common answer. \textbf{Action sequence diversity}: number of unique action sequences across $N$ runs. \textbf{Step variance ratio}: $(\max - \min)/\text{mean}$ of step counts. \textbf{First divergence point}: earliest step where runs take different actions. \textbf{Correctness}: fuzzy string matching (answer contains gold or vice versa, case-insensitive); results under exact match and token F1 in Appendix~\ref{app:metrics}.
+
+% ============================================================================
+% RESULTS
+% ============================================================================
+\section{Results}
+
+\begin{figure*}[t]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{unique_sequences_histogram.png}
+\caption{Distribution of unique action sequences per task.}
+\label{fig:histogram}
+\end{subfigure}
+\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{correctness_comparison.png}
+\caption{Correctness for consistent ($\leq$2 seqs) vs.\ inconsistent ($\geq$4 seqs) tasks.}
+\label{fig:correctness}
+\end{subfigure}
+\caption{Behavioral consistency varies across models (left) and is associated with correctness (right).}
+\label{fig:main}
+\end{figure*}
+
+\subsection{Overall Model Comparison}
+
+Table~\ref{tab:overall} summarizes 10,000 runs. Claude Sonnet 4.5 achieves both the highest accuracy and consistency (2.3 unique sequences). Llama 3.1 70B shows the most behavioral variance (4.2 unique sequences), followed by Gemini 3 Pro (3.0). All five models exhibit measurable behavioral inconsistency even on identical inputs.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Performance across five models (200 tasks each, except GPT-4o and Gemini with 100--102). Seqs = unique action sequences; Var = step variance ratio.}
+\label{tab:overall}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Correct} & \textbf{Seqs} & \textbf{Steps} & \textbf{Var} \\
+\midrule
+Claude Sonnet 4.5 & \textbf{81.5\%} & \textbf{2.3} & 5.1 & \textbf{22.2\%} \\
+GPT-5 & 79.5\% & 2.4 & 4.2 & 36.0\% \\
+Llama 3.1 70B & 73.7\% & 4.2 & 4.7 & 64.9\% \\
+GPT-4o & 73.3\% & 2.5 & 4.6 & 30.2\% \\
+Gemini 3 Pro & 72.9\% & 3.0 & 5.2 & 36.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Consistency Is Associated with Correctness}
+
+Table~\ref{tab:consistency} shows the central finding: consistent tasks ($\leq$2 unique sequences) achieve 80--87\% accuracy while inconsistent tasks ($\geq$4 sequences) achieve 43--65\%. The gap is significant for all five models (Mann-Whitney $U$, all $p<0.001$; rank-biserial $r=-0.35$ to $-0.58$).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Correctness (\%) by consistency level. Gap in pp. $r$ = rank-biserial; $n$ = consistent/inconsistent counts. All $p<0.001$.}
+\label{tab:consistency}
+\begin{tabular}{l@{\hskip 4pt}c@{\hskip 4pt}c@{\hskip 4pt}c@{\hskip 4pt}c@{\hskip 4pt}c}
+\toprule
+\textbf{Model} & \textbf{Cons.} & \textbf{Incons.} & \textbf{Gap} & \textbf{$r$} & \textbf{$n$} \\
+ & ($\leq$2) & ($\geq$4) & & & \\
+\midrule
+Gemini 3 Pro & 86.5 & 44.7 & 41.8 & $-$.58 & 65/34 \\
+GPT-4o & 80.1 & 44.2 & 35.9 & $-$.47 & 70/19 \\
+GPT-5 & 85.9 & 53.1 & 32.8 & $-$.43 & 141/29 \\
+Claude Son.\ 4.5 & 86.4 & 60.3 & 26.1 & $-$.39 & 155/32 \\
+Llama 70B & 82.3 & 64.7 & 17.6 & $-$.35 & 61/104 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Controlling for difficulty.} Task difficulty confounds the consistency--correctness relationship. We compute a difficulty proxy (mean correctness across all models) and bin questions into Easy ($\geq$0.80, $n=135$), Medium (0.40--0.79, $n=31$), and Hard ($<$0.40, $n=34$). The consistency gap persists within Easy and Medium strata (2--22pp) but vanishes for Hard tasks. Partial correlations remain significant for three models: Gemini ($r=-0.50$, $p<0.001$), Llama ($r=-0.18$, $p=0.012$), and GPT-5 ($r=-0.17$, $p=0.019$); full results in Appendix~\ref{app:difficulty}.
+
+\subsection{Consistency as a Runtime Failure Detector}
+\label{sec:failure_detection}
+
+We frame failure detection as binary classification: predicting whether the majority answer is incorrect using only consistency metrics. Table~\ref{tab:detection} reports the best feature per model.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Failure detection via consistency metrics. H = answer entropy. Baseline precision equals the per-model error rate.}
+\label{tab:detection}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Model} & \textbf{Feat.} & \textbf{Prec.} & \textbf{Rec.} & \textbf{AUROC} \\
+\midrule
+Gemini 3 Pro & H$>$1.5 & 38.1\% & 47.1\% & .689 \\
+GPT-5 & H$>$1.5 & 33.3\% & 56.8\% & .686 \\
+Llama 70B & H$>$1.5 & 35.3\% & 48.6\% & .671 \\
+GPT-4o & Seq$>$4 & 66.7\% & 33.3\% & .600 \\
+Claude Son.\ 4.5 & H$>$0.5 & 17.0\% & 57.7\% & .570 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the most variable models (Llama, GPT-5, Gemini), answer entropy achieves AUROC 0.67--0.69, substantially above the 0.50 random baseline, validating consistency as a lightweight runtime failure signal.
+
+\subsection{Divergence Occurs Early; Path Length Matters}
+
+Pooled across five models, 20.0\% [95\% CI: 17.3--22.9\%] of tasks diverge by step~2, but this rate varies dramatically: Llama diverges early in 52.5\% [45.6--59.3\%] of tasks vs.\ 7.5\% [4.6--12.0\%] for Claude and GPT-5. Among Llama's early-diverging tasks, accuracy is 71.7\% vs.\ 85.8\% for late-diverging tasks. The first search query largely determines the trajectory.
+
+Path length correlates with both consistency and correctness: Spearman $\rho$ between mean steps and unique sequences is 0.74 (Llama), 0.50 (Gemini), 0.48 (Claude), 0.47 (GPT-5), 0.43 (GPT-4o); pooled $\rho=0.48$, all $p<0.001$. Longer paths indicate backtracking and uncertainty; each additional step is an opportunity to diverge and err.
+
+\subsection{Temperature Ablation}
+
+Figure~\ref{fig:temp} shows results across four models (Gemini temperature ablation partially complete; see Appendix~\ref{sec:gemini_note}). All models show monotonically increasing unique sequences with temperature. Claude achieves near-perfect consistency at $T\!=\!0.0$ (1.0 sequences) while Llama retains 2.3, confirming that model architecture matters beyond sampling noise. The accuracy--temperature tradeoff is model-dependent: GPT-4o gains $+$7pp at $T\!=\!0.0$, while GPT-5 and Llama show minimal accuracy change. The finding that $T\!=\!0.0$ does not eliminate divergence for Llama or GPT-5 indicates that agentic inconsistency arises from factors beyond token-level sampling. Full table in Appendix~\ref{app:temp}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{temperature_ablation.pdf}
+\caption{Temperature ablation (20 questions, 5 runs). Solid: unique sequences (left axis); dashed: accuracy (right axis).}
+\label{fig:temp}
+\end{figure}
+
+\subsection{Cross-Benchmark Pilot: SWE-bench}
+\label{sec:swebench}
+
+To test generalizability beyond HotpotQA's minimal action space, we conduct a pilot study on SWE-bench Verified \citep{swebench, swebench_verified}: 10 astropy tasks, 5 runs per model-task pair (150 runs), using Claude, GPT-5, and Llama with an identical bash-only scaffold.
+
+\begin{table}[h]
+\centering
+\small
+\caption{SWE-bench pilot (10 tasks $\times$ 5 runs). CV = std/mean of step counts. The HotpotQA consistency hierarchy is preserved.}
+\label{tab:swebench}
+\begin{tabular}{lccc}
+\toprule
+& \textbf{Claude} & \textbf{GPT-5} & \textbf{Llama} \\
+\midrule
+CV & \textbf{15.2\%} & 32.2\% & 47.0\% \\
+Accuracy & \textbf{58\%} & 32\% & 4\% \\
+Unique Seqs & 100\% & 100\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The consistency ranking is identical to HotpotQA (Claude $>$ GPT-5 $>$ Llama), consistent with consistency being a stable model-level property. All 150 runs produced unique action sequences, yet CV still discriminates between models. The accuracy gap widens from 8pp (HotpotQA) to 54pp (SWE-bench), consistent with the hypothesis that complexity amplifies consistency effects. Given the small sample (10 tasks, single repository), these results are preliminary; full cross-benchmark comparison in Appendix~\ref{app:swebench}.
+
+\subsection{Ranking Instability}
+\label{sec:rankings}
+
+We perform 10,000 bootstrap iterations across five models on the 100 shared questions, sampling one run per question per model. \textbf{70.1\% [69.2--71.0\%] of single-run evaluations produce a ranking differing from the multi-run ground truth} (Claude 81.0\% $>$ GPT-5 80.2\% $>$ Llama 76.6\% $>$ GPT-4o 73.3\% $=$ Gemini 73.3\%). The instability stems from narrow accuracy gaps and within-model variance; the tied bottom-two models particularly amplify reordering. Agent benchmarks should report multi-run statistics.
+
+% ============================================================================
+% DISCUSSION
+% ============================================================================
+\section{Discussion}
+
+\paragraph{Beyond $\tau$-bench.}
+While $\tau$-bench \citep{yao2024tau} established that agents are inconsistent, we provide complementary insights: \emph{where} variance originates (step~2), its association with correctness ($r=-0.35$ to $-0.58$), and its practical utility for failure detection (AUROC 0.67--0.69). These findings suggest actionable interventions beyond measuring pass$^k$.
+
+\paragraph{Practical implications.}
+Consistency monitoring is feasible and useful: running parallel executions and checking agreement could flag likely failures, with answer entropy as a lightweight signal. The step~2 bottleneck suggests that improving first-query formulation could reduce downstream variance. For model selection, Claude exhibited the highest accuracy and consistency in our evaluation, though we cannot disentangle model capability from training methodology.
+
+\paragraph{Limitations and future work.}
+Our analysis primarily uses HotpotQA with a 3-tool action space; the SWE-bench pilot provides preliminary evidence of generalizability. The temperature ablation uses a smaller sample (20 questions). We cannot establish causality from observational data. Gemini 3 Pro required a \texttt{top\_p} workaround to achieve stochastic sampling (Appendix~\ref{sec:gemini_note}), and its Q100--199 data collection is ongoing; current Gemini results use 102 questions. We plan extensions to multimodal agents and analytical reasoning (FinQA, GAIA).
+
+% ============================================================================
+% CONCLUSION
+% ============================================================================
+\section{Conclusion}
+
+Behavioral consistency in LLM agents is measurable, associated with correctness, and practically useful. Across 10,000 runs on five models, consistent agents achieve 80--87\% accuracy vs.\ 43--65\% for inconsistent ones, with effect sizes that survive difficulty controls. Consistency metrics detect failures with AUROC 0.67--0.69, and single-run evaluations produce incorrect rankings 70.1\% of the time. These findings argue for multi-run evaluation and runtime consistency monitoring as standard practice.
+
+Code and data: \url{https://github.com/amanmehta-maniac/agent-consistency}.
+
+% ============================================================================
+% IMPACT STATEMENT
+% ============================================================================
+\section*{Impact Statement}
+
+Our finding that single-run evaluations produce incorrect model rankings 70\% of the time has direct implications for practitioners who rely on benchmark scores to select agent models. For high-stakes deployments, monitoring behavioral consistency across parallel executions could serve as a lightweight failure detection mechanism with AUROC 0.67--0.69. We provide diagnostic tools for understanding existing limitations rather than new capabilities, and do not foresee negative societal consequences from this work.
+
+% ============================================================================
+% REFERENCES
+% ============================================================================
+\bibliography{references}
+\bibliographystyle{icml2026}
+
+% ============================================================================
+% APPENDIX
+% ============================================================================
+\appendix
+
+\section{Gemini 3 Pro: Sampling Configuration}
+\label{sec:gemini_note}
+
+Gemini 3 Pro on the Snowflake Cortex endpoint initially exhibited near-deterministic outputs at $T\!=\!0.7$, producing identical action sequences in $>$99\% of runs. We determined that the endpoint does not fully respect the \texttt{temperature} parameter without explicitly setting \texttt{top\_p} $< 1.0$. After adding \texttt{top\_p = 0.95}, outputs became properly stochastic (3.0 unique sequences on average, comparable to GPT-4o and GPT-5). Main results use the corrected stochastic data. Temperature ablation for Gemini is partially complete ($T\!=\!0.3$: Acc 76.0\%, 2.0 unique sequences; $T\!=\!0.7$: Acc 76.5\%, 2.5 unique sequences); $T\!=\!0.0$ data collection is ongoing.
+
+\section{Temperature Ablation: Full Results}
+\label{app:temp}
+
+\begin{table}[h]
+\centering
+\caption{Full temperature ablation (20 questions, 5 runs each). $T\!=\!0.7$ uses same questions from the main experiment.}
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Model} & \textbf{Temp} & \textbf{Accuracy} & \textbf{Unique Seqs} \\
+\midrule
+\multirow{3}{*}{Llama 3.1 70B} & 0.0 & 82.0\% & 2.3 \\
+& 0.3 & 83.0\% & 2.1 \\
+& 0.7 & 81.5\% & 4.6 \\
+\midrule
+\multirow{3}{*}{Claude Sonnet 4.5} & 0.0 & 85.0\% & 1.0 \\
+& 0.3 & 87.0\% & 1.6 \\
+& 0.7 & 80.0\% & 2.0 \\
+\midrule
+\multirow{3}{*}{GPT-5} & 0.0 & 85.0\% & 1.4 \\
+& 0.3 & 87.0\% & 1.5 \\
+& 0.7 & 83.5\% & 2.0 \\
+\midrule
+\multirow{3}{*}{GPT-4o} & 0.0 & 81.0\% & 1.5 \\
+& 0.3 & 78.0\% & 1.6 \\
+& 0.7 & 74.0\% & 2.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Difficulty Stratification: Full Results}
+\label{app:difficulty}
+
+Task difficulty is computed as mean correctness across all runs from all models. Strata: Easy ($\geq$0.80), Medium (0.40--0.79), Hard ($<$0.40). Of 200 questions: 135 Easy, 31 Medium, 34 Hard.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Consistency--correctness gap (pp) within difficulty strata.}
+\scriptsize
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Stratum} & \textbf{Llama} & \textbf{GPT-4o} & \textbf{GPT-5} & \textbf{Claude} & \textbf{Gemini} \\
+\midrule
+Easy (135) & 9.2pp & 1.0pp & 5.9pp & 1.5pp & 17.8pp \\
+Medium (31) & $-$0.5pp & 3.1pp & 15.8pp & 3.3pp & 22.3pp \\
+Hard (34) & $-$13.3pp & $-$7.1pp & 1.2pp & $-$5.3pp & $-$5.5pp \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Partial correlations between unique sequences and accuracy, controlling for difficulty (continuous): Gemini $r=-0.496$ ($p<0.001$), Llama $r=-0.178$ ($p=0.012$), GPT-5 $r=-0.166$ ($p=0.019$), GPT-4o $r=-0.075$ ($p=0.458$), Claude $r=-0.035$ ($p=0.620$). The association remains significant for three of five models.
+
+\section{Cross-Benchmark Comparison}
+\label{app:swebench}
+
+\begin{table}[h]
+\centering
+\small
+\caption{HotpotQA vs.\ SWE-bench. Consistency ranking preserved; accuracy gaps widen with task complexity.}
+\begin{tabular}{lcc}
+\toprule
+& \textbf{HotpotQA} & \textbf{SWE-bench} \\
+\midrule
+Action space & 3 tools & Unrestricted bash \\
+Avg trajectory & 3--8 steps & 10--46 steps \\
+Best model CV & 8.2\% (Claude) & 15.2\% (Claude) \\
+Worst model CV & 22.1\% (Llama) & 47.0\% (Llama) \\
+Accuracy range & 73--82\% & 4--58\% \\
+Mean unique seqs & 2.3--4.2 & all unique \\
+Ranking preserved & \multicolumn{2}{c}{$\checkmark$ (Claude $>$ GPT $>$ Llama)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Question Type Analysis}
+\label{app:qtype}
+
+On the first 100 questions with type annotations, we compare bridge questions (multi-hop, $n=79$) with comparison questions (yes/no, $n=21$) using Llama 3.1 70B. Comparison questions show \emph{higher} correctness (80.0\% vs.\ 75.7\%) but \emph{lower} answer consistency (62.4\% vs.\ 76.6\%) and lower step variance (41\% vs.\ 63\%), highlighting that answer consistency and explanation consistency are distinct dimensions.
+
+\section{Metric Sensitivity}
+\label{app:metrics}
+
+We verify robustness to the choice of correctness metric. Under exact match (EM), overall accuracy decreases (e.g., Claude: 43.6\% EM vs.\ 81.5\% fuzzy) but model rankings and consistency gaps are preserved. Under token F1 $>$ 0.5, results closely track fuzzy match. The consistency--correctness association holds across all three metrics for all five models.
+
+\end{document}

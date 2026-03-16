@@ -1,0 +1,197 @@
+{
+  "Llama 3.1 70B": {
+    "n_tasks": 200,
+    "n_incorrect": 37,
+    "baseline_precision": 0.185,
+    "features": {
+      "unique_sequences": {
+        "precision": 0.212,
+        "recall": 0.595,
+        "f1": 0.312,
+        "n_flagged": 104,
+        "threshold": 3,
+        "auroc": 0.52
+      },
+      "step_variance_ratio": {
+        "precision": 0.195,
+        "recall": 0.784,
+        "f1": 0.312,
+        "n_flagged": 149,
+        "threshold": 0.3,
+        "auroc": 0.5
+      },
+      "first_divergence_step": {
+        "precision": 0.152,
+        "recall": 0.432,
+        "f1": 0.225,
+        "n_flagged": 105,
+        "threshold": 2,
+        "auroc": 0.426
+      },
+      "answer_entropy": {
+        "precision": 0.353,
+        "recall": 0.486,
+        "f1": 0.409,
+        "n_flagged": 51,
+        "threshold": 1.5,
+        "auroc": 0.671
+      }
+    }
+  },
+  "Claude Sonnet 4.5": {
+    "n_tasks": 200,
+    "n_incorrect": 26,
+    "baseline_precision": 0.13,
+    "features": {
+      "unique_sequences": {
+        "precision": 0.156,
+        "recall": 0.269,
+        "f1": 0.197,
+        "n_flagged": 45,
+        "threshold": 2,
+        "auroc": 0.503
+      },
+      "step_variance_ratio": {
+        "precision": 0.156,
+        "recall": 0.192,
+        "f1": 0.172,
+        "n_flagged": 32,
+        "threshold": 0.5,
+        "auroc": 0.504
+      },
+      "first_divergence_step": {
+        "precision": 0.067,
+        "recall": 0.038,
+        "f1": 0.049,
+        "n_flagged": 15,
+        "threshold": 2,
+        "auroc": 0.476
+      },
+      "answer_entropy": {
+        "precision": 0.17,
+        "recall": 0.577,
+        "f1": 0.263,
+        "n_flagged": 88,
+        "threshold": 0.5,
+        "auroc": 0.57
+      }
+    }
+  },
+  "GPT-4o": {
+    "n_tasks": 100,
+    "n_incorrect": 24,
+    "baseline_precision": 0.24,
+    "features": {
+      "unique_sequences": {
+        "precision": 0.667,
+        "recall": 0.333,
+        "f1": 0.444,
+        "n_flagged": 12,
+        "threshold": 4,
+        "auroc": 0.6
+      },
+      "step_variance_ratio": {
+        "precision": 0.385,
+        "recall": 0.417,
+        "f1": 0.4,
+        "n_flagged": 26,
+        "threshold": 0.5,
+        "auroc": 0.559
+      },
+      "first_divergence_step": {
+        "precision": 0.273,
+        "recall": 0.125,
+        "f1": 0.171,
+        "n_flagged": 11,
+        "threshold": 2,
+        "auroc": 0.501
+      },
+      "answer_entropy": {
+        "precision": 0.234,
+        "recall": 0.917,
+        "f1": 0.373,
+        "n_flagged": 94,
+        "threshold": 0.5,
+        "auroc": 0.57
+      }
+    }
+  },
+  "GPT-5": {
+    "n_tasks": 200,
+    "n_incorrect": 37,
+    "baseline_precision": 0.185,
+    "features": {
+      "unique_sequences": {
+        "precision": 0.6,
+        "recall": 0.324,
+        "f1": 0.421,
+        "n_flagged": 20,
+        "threshold": 4,
+        "auroc": 0.68
+      },
+      "step_variance_ratio": {
+        "precision": 0.333,
+        "recall": 0.649,
+        "f1": 0.44,
+        "n_flagged": 72,
+        "threshold": 0.3,
+        "auroc": 0.664
+      },
+      "first_divergence_step": {
+        "precision": 0.2,
+        "recall": 0.081,
+        "f1": 0.115,
+        "n_flagged": 15,
+        "threshold": 2,
+        "auroc": 0.583
+      },
+      "answer_entropy": {
+        "precision": 0.333,
+        "recall": 0.568,
+        "f1": 0.42,
+        "n_flagged": 63,
+        "threshold": 1.5,
+        "auroc": 0.686
+      }
+    }
+  },
+  "Gemini 3 Pro": {
+    "n_tasks": 102,
+    "n_incorrect": 17,
+    "baseline_precision": 0.167,
+    "features": {
+      "unique_sequences": {
+        "precision": 0.212,
+        "recall": 0.412,
+        "f1": 0.28,
+        "n_flagged": 33,
+        "threshold": 3,
+        "auroc": 0.509
+      },
+      "step_variance_ratio": {
+        "precision": 0.2,
+        "recall": 0.471,
+        "f1": 0.281,
+        "n_flagged": 40,
+        "threshold": 0.3,
+        "auroc": 0.521
+      },
+      "first_divergence_step": {
+        "precision": 0.214,
+        "recall": 0.176,
+        "f1": 0.194,
+        "n_flagged": 14,
+        "threshold": 2,
+        "auroc": 0.481
+      },
+      "answer_entropy": {
+        "precision": 0.381,
+        "recall": 0.471,
+        "f1": 0.421,
+        "n_flagged": 21,
+        "threshold": 1.5,
+        "auroc": 0.689
+      }
+    }
+  }
+}
