@@ -209,7 +209,7 @@ Claude Son.\ 4.5 & H$>$0.5 & 23.9\% & 63.6\% & .619 \\
 \end{tabular}
 \end{table}
 
-For the most variable models (Llama, GPT-5, Gemini), consistency metrics achieve AUROC 0.69--0.78, substantially above the 0.50 random baseline. Even for the most consistent model (Claude), AUROC reaches 0.62, validating consistency as a lightweight runtime failure signal across all four models.
+For the most variable models (Llama, GPT-5, Gemini), consistency metrics achieve AUROC 0.69--0.78, substantially above the 0.50 random baseline. Even for the most consistent model (Claude), AUROC reaches 0.62, validating consistency as a lightweight runtime failure signal across all four models. Gemini's best predictor is unique sequences rather than answer entropy ($>$4 sequences indicates likely failure); with 66 inconsistent tasks in 200 questions, Gemini provides sufficient signal for the sequence-count feature to outperform entropy-based thresholds.
 
 \subsection{Majority Voting and Selective Prediction}
 \label{sec:intervention}
@@ -278,7 +278,7 @@ The consistency ranking is identical to HotpotQA (Claude $>$ GPT-5 $>$ Llama), c
 \subsection{Ranking Instability}
 \label{sec:rankings}
 
-We perform 10,000 bootstrap iterations across four models on all 200 questions, sampling one run per question per model. \textbf{29.3\% [28.4--30.1\%] of single-run evaluations produce a ranking differing from the multi-run ground truth} (Claude 81.5\% $>$ GPT-5 79.5\% $>$ Llama 73.7\% $>$ Gemini 72.2\%). Nearly one in three single-run evaluations would misrank models. The instability stems from narrow accuracy gaps between adjacent models and within-model variance. Agent benchmarks should report multi-run statistics.
+We perform 10,000 bootstrap iterations across four models on all 200 questions, sampling one run per question per model. \textbf{29.3\% [28.4--30.1\%] of single-run evaluations produce a ranking differing from the multi-run ground truth} (Claude 81.5\% $>$ GPT-5 79.6\% $>$ Llama 73.7\% $>$ Gemini 72.2\%). Nearly one in three single-run evaluations would misrank models. The instability stems from narrow accuracy gaps between adjacent models and within-model variance. Agent benchmarks should report multi-run statistics.
 
 % ============================================================================
 % DISCUSSION
@@ -311,7 +311,7 @@ Code and data: \url{https://github.com/amanmehta-maniac/agent-consistency}.
 % ============================================================================
 \section*{Impact Statement}
 
-Our finding that single-run evaluations produce incorrect model rankings 34\% of the time has direct implications for practitioners who rely on benchmark scores to select agent models. For high-stakes deployments, monitoring behavioral consistency across parallel executions could serve as a lightweight failure detection mechanism with AUROC 0.62--0.78. We provide diagnostic tools for understanding existing limitations rather than new capabilities, and do not foresee negative societal consequences from this work.
+Our finding that single-run evaluations produce incorrect model rankings 29\% of the time has direct implications for practitioners who rely on benchmark scores to select agent models. For high-stakes deployments, monitoring behavioral consistency across parallel executions could serve as a lightweight failure detection mechanism with AUROC 0.62--0.78. We provide diagnostic tools for understanding existing limitations rather than new capabilities, and do not foresee negative societal consequences from this work.
 
 % ============================================================================
 % REFERENCES
@@ -492,7 +492,7 @@ Gemini 3 Pro & 72.2 & 72.3{\tiny$+$0.1} & 72.2{\tiny$-$0.0} & 72.2{\tiny$-$0.0} 
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:selective_full} reports selective prediction at multiple agreement thresholds. Stricter thresholds yield higher accuracy but lower coverage. The accuracy--coverage tradeoff is favorable for Llama, Claude, and GPT-5; Gemini shows little improvement under selective prediction, reflecting its high consistent-wrong rate.
+Table~\ref{tab:selective_full} reports selective prediction at multiple agreement thresholds. Stricter thresholds yield higher accuracy but lower coverage. The accuracy--coverage tradeoff is favorable for Llama, Claude, and GPT-5; Gemini shows minimal improvement under selective prediction (+1.2pp at 3/3 unanimity), consistent with its high consistent-wrong rate relative to inconsistent-lucky rate.
 
 \begin{table}[h]
 \centering
