@@ -173,7 +173,7 @@ Because the commitment prompt adds tokens to the context window, we include a \e
 
 We run all three conditions on 100 HotpotQA questions (the same set used in the Qwen cross-model validation) with 10 runs per question per condition on Llama~3.1~70B ($T = 0.5$). Table~\ref{tab:intervention} reports the results.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \caption{Three-condition prompting intervention ($n = 100$ questions, 10 runs each). The filler control matches the commitment prompt in token count but uses semantically neutral text. The critical comparison (Filler vs.\ Commitment) isolates the commitment framing effect from token-count confounds.}
 \label{tab:intervention}
@@ -234,6 +234,8 @@ We introduced \emph{representational commitment}---the degree to which hidden st
 
 \paragraph{Author Note.} Large language models (specifically Claude) were used for code generation, data analysis scripting, and writing assistance during the preparation of this manuscript. All scientific claims, experimental designs, and interpretations were made by the authors.
 
+\paragraph{Reproducibility Statement.} We provide full experimental details to facilitate reproduction. Section~3 specifies the model (Llama-3.1-70B-Instruct), task (ReAct on HotpotQA), sampling parameters ($T{=}0.5$, max 25 steps), dataset composition (100 questions: 50 easy, 50 hard), and hidden state extraction procedure (11 layers sampled every 8 from 0--80). Cross-model experiments use identical protocols on Qwen~2.5~72B and Phi-3-Medium-14B. All statistical tests, confidence intervals, and effect sizes are reported throughout. Appendix tables provide per-layer, per-step, and per-model numerical results. Code and data will be released upon publication.
+
 \bibliography{references}
 \bibliographystyle{colm2026_conference}
 
@@ -249,7 +251,7 @@ Results are mixed: on 2/5 questions, steering reduced step-count CV (from 0.31 t
 \section{Permutation Test Results}
 \label{app:permutation}
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Permutation test at step~4 (10{,}000 iterations). All layers 32--80 are significant at $p < 0.002$.}
 \label{tab:permutation}
 \centering
@@ -272,7 +274,7 @@ Layer & $r$ & Param.\ $p$ & Perm.\ $p$ \\
 \section{Partial Correlation Results}
 \label{app:partial}
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Partial correlations at step~4, controlling for accuracy and difficulty label. The signal strengthens after removing difficulty-related variance.}
 \label{tab:partial}
 \centering
@@ -297,7 +299,7 @@ Layer & Raw $r$ & Raw $p$ & Partial $r$ & Partial $p$ \\
 
 Table~\ref{tab:crossmodel_full} reports the full layer-wise correlations between activation similarity and behavioral CV at step~4 for all three models. Phi-3 layers are mapped to proportionally equivalent depths (e.g., Phi-3 layer~16 $\approx$ 40\% depth).
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Cross-model validation at step~4. All three models show the negative correlation between activation similarity and behavioral CV. Phi-3 (14B, 40 layers, $d{=}5120$) validates on a structurally different architecture. $^*p < 0.05$.}
 \label{tab:crossmodel_full}
 \centering
@@ -353,7 +355,7 @@ Figure~\ref{fig:tsne} shows a t-SNE visualization of step-4 hidden states (layer
 
 Table~\ref{tab:baselines_full} reports the full set of candidate predictors of behavioral CV, including input-level features and downstream behavioral consequences.
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Predictors of behavioral CV. $\dagger$Downstream behavioral consequences, not confounds.}
 \label{tab:baselines_full}
 \centering
@@ -382,7 +384,7 @@ Mean thought length (S3) & $0.12$ & $.24$ \\
 
 Table~\ref{tab:runtime_full} reports the complete runtime monitor evaluation across all features, models, and labeling schemes.
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Runtime monitor AUROC (95\% CI) for predicting behavioral consistency. Features A--E use step-4 hidden states; baselines use only surface-level input properties.}
 \label{tab:runtime_full}
 \centering
@@ -412,7 +414,7 @@ Thought length & .10 & .04 & .00 & .00 \\
 
 Table~\ref{tab:strategyqa_layers} reports the full layer-wise correlations between activation similarity and behavioral CV at step~3 (the peak step) for Llama-3.1-70B on StrategyQA ($n{=}50$). All layers 8--80 are significant at $p < 10^{-8}$, with partial correlations controlling for accuracy virtually unchanged due to the high overall accuracy (93.2\%).
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{StrategyQA: Layer-wise correlations at step~3 (Llama-3.1-70B, $n{=}50$). The signal spans all non-embedding layers and peaks at layer~72. Partial correlations control for accuracy.}
 \label{tab:strategyqa_layers}
 \centering
@@ -438,7 +440,7 @@ Layer & Raw $r$ & Raw $p$ & Partial $r$ & Partial $p$ \\
 
 Table~\ref{tab:crossbenchmark} summarizes cross-benchmark comparison. The StrategyQA signal is stronger than HotpotQA despite a smaller sample, and peaks one step earlier consistent with its shorter reasoning chains.
 
-\begin{table}[h]
+\begin{table}[ht]
 \caption{Cross-benchmark comparison of the representational commitment signal (Llama-3.1-70B). StrategyQA produces a stronger signal that peaks one step earlier, consistent with shorter reasoning chains.}
 \label{tab:crossbenchmark}
 \centering
