@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: intervention-filler
+  namespace: mltraining-dev
+  labels:
+    app: intervention-filler
+    owner: amehta
+    project: research
+spec:
+  backoffLimit: 3
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      labels:
+        app: intervention-filler
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: mltraining-dev-sa
+      initContainers:
+        - name: init-results-dir
+          image: 937559181915.dkr.ecr.us-west-2.amazonaws.com/du/playground-generic:1.7.1
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              mkdir -p /results/intervention_experiment/filler
+              echo "Filler results directory initialized at $(date)" > /results/init_filler.log
+          volumeMounts:
+            - name: results
+              mountPath: /results
+      containers:
+        - name: experiment
+          image: 937559181915.dkr.ecr.us-west-2.amazonaws.com/du/playground-generic:1.7.1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              set -ex
+              echo "Installing experiment dependencies..."
+              pip install -q requests numpy openai together anthropic httpx
+              cd /experiment
+
+              echo "=== Running FILLER condition (100q x 10 runs) ==="
+              python -u run_intervention_experiment.py \
+                --questions /experiment/qwen_100q_full.json \
+                --output /results/intervention_experiment \
+                --condition filler \
+                --resume
+
+              echo "Filler condition complete!"
+              echo "FILLER_DONE" > /results/intervention_experiment/filler/DONE
+          env:
+            - name: K8S_ENDPOINT
+              value: "http://llama-70b-hidden-states-svc:8000"
+          resources:
+            requests:
+              cpu: "4"
+              memory: "16Gi"
+            limits:
+              cpu: "8"
+              memory: "32Gi"
+          volumeMounts:
+            - name: results
+              mountPath: /results
+            - name: experiment-code
+              mountPath: /experiment
+      volumes:
+        - name: experiment-code
+          configMap:
+            name: intervention-experiment-code
+        - name: results
+          persistentVolumeClaim:
+            claimName: intervention-results
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Exists"
+          effect: "NoSchedule"
